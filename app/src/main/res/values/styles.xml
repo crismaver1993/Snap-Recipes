@@ -1,0 +1,25 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:windowActivityTransitions">true</item>
+    </style>
+
+
+    <style name="mainTextStyle">
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="subTextStyle">
+        <item name="android:fontFamily">sans-serif-condensed-medium</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+
+</resources>

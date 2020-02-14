@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:scrollbars="vertical"
+    tools:context=".RecipeDetailsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="vertical"
+        android:background="@color/lightgray">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/recipeDetailsImageView"
+            android:layout_width="220dp"
+            android:layout_height="200dp"
+            android:transitionName="recipeImageForTransition"
+            />
+
+        <ProgressBar
+            android:id="@+id/recipeDetailsProgressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminate="true"
+            android:max="100"
+            android:visibility="visible"
+            android:indeterminateTint="@color/orange"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            app:cardCornerRadius="12dp">
+
+            <TextView
+                android:id="@+id/recipeDetailsTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:fontFamily="sans-serif-black"
+                android:transitionName="recipeTitleForTransition"
+                android:text="..." />
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_timer_light_blue_24dp" />
+
+                    <TextView
+                        android:layout_marginTop="8dp"
+                        android:id="@+id/recipeDetailsDurationTextView"
+                        style="@style/subTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="..." />
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Difficulty"
+                        android:textSize="22sp"
+                        android:textColor="@color/orange"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_marginTop="8dp"
+                        android:id="@+id/recipeDetailsDifficultyTextView"
+                        style="@style/subTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="..." />
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_people_orange_24dp" />
+
+                    <TextView
+                        android:layout_marginTop="8dp"
+                        android:id="@+id/recipeDetailsServingTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/subTextStyle"
+                        android:text="..." />
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:id="@+id/recipeDetailsLinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="INGREDIENTS"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="4dp"
+                    android:textColor="@color/orange"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RECIPE DETAILS"
+                    android:textSize="16sp"
+                    android:textColor="@color/orange"/>
+
+                <Button
+                    android:id="@+id/viewRecipeOnAppBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View Recipe"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/custom_red_button"
+                    android:textColor="@color/white"
+                    android:onClick="openRecipeStepsInApp"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Source"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/custom_white_botton"
+                    android:layout_marginBottom="8dp"
+                    android:textColor="@color/red"
+                    android:onClick="openRecipeSource"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>

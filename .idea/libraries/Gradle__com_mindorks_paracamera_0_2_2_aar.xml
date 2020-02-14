@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: com.mindorks:paracamera:0.2.2@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/48d71a4e3adc12fa4d55c53843e979be/jetified-paracamera-0.2.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/48d71a4e3adc12fa4d55c53843e979be/jetified-paracamera-0.2.2/res" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mindorks/paracamera/0.2.2/667cbb29e3249011014d298c0850282359b1fff3/paracamera-0.2.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mindorks/paracamera/0.2.2/9615c7b0ce9ef2a1bcaa713752911fd6a252f457/paracamera-0.2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

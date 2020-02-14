@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/closeFilterActivity"
+            android:onClick="closeFilterActivity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close_black_24dp"
+            android:layout_gravity="center_horizontal"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filters"
+            android:textSize="22sp"
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="16sp"
+        android:background="@android:color/darker_gray"
+        android:textColor="@color/white"
+        android:text="@string/max_cooking_time"/>
+
+    <RadioGroup
+        android:id="@+id/maxDishTimeRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/uptoTenradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="&#60; 10 Mins."
+            />
+
+        <RadioButton
+            android:id="@+id/uptoTwentyradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="&#60; 20 Mins."
+            />
+
+        <RadioButton
+            android:id="@+id/uptoFourtyradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="&#60; 40 Mins."
+            />
+
+        <RadioButton
+            android:id="@+id/uptoEightyradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="&#60; 80 Mins."
+            />
+
+        <RadioButton
+            android:id="@+id/uptoOneSixtyradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="&#60; 160 Mins."
+            />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:padding="10dp"
+        android:textSize="16sp"
+        android:background="@android:color/darker_gray"
+        android:textColor="@color/white"
+        android:text="Dish Type"/>
+
+    <RadioGroup
+        android:id="@+id/dishTypeRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/vegradioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Vegetarian"
+            />
+
+        <RadioButton
+            android:id="@+id/nonVegRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Non-Vegetarian"
+            />
+    </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/darker_gray"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Note: Some results may get removed due to filter constraints."
+        android:padding="10dp"
+        android:textStyle="italic"
+        />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+    </FrameLayout>
+
+    <!-- content fixated to the bottom of the screen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <!-- your bottom content -->
+
+        <Button
+            android:id="@+id/applyDishFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:background="@drawable/custom_red_button"
+            android:textColor="@color/white"
+            android:onClick="applyDishFiltersButton"
+            android:layout_margin="16dp"/>
+    </LinearLayout>
+
+
+
+
+
+</LinearLayout>

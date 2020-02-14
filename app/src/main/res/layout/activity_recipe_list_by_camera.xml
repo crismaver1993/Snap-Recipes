@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="0dp"
+    android:background="@color/lightgray"
+    android:orientation="vertical"
+    android:padding="0dp"
+    tools:context=".RecipeListByCameraActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/yellow">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="28dp"
+            android:layout_weight="100">
+
+            <ImageView
+                android:id="@+id/backButtonImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="goToParentActivity"
+                android:layout_marginTop="6dp"
+                app:srcCompat="@drawable/ic_arrow_back_black_24dp"
+                android:layout_weight="10"/>
+
+            <TextView
+                android:layout_gravity=""
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:text="Snap\nRecipes"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="32sp"
+                android:layout_weight="80"/>
+
+            <ImageView
+                android:id="@+id/filterButtonImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:srcCompat="@drawable/ic_filter"
+                android:layout_weight="10"
+                android:onClick="openFilterActivity"/>
+
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/detectedItemLinearLayout"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/addVegetableItemsImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_create_white_24dp"
+                    android:padding="10dp"
+                    android:background="@drawable/custom_black_button"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
+                    android:onClick="editDetectedVegetables"
+                    android:visibility="invisible"
+                   />
+
+
+                <!-- Other Buttons will be added programmatically -->
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/filtersAppliedCameraActivity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="16sp"
+        android:background="@color/red"
+        android:textColor="@color/white"
+        android:text="Filters applied"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/waitTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="Looking for dishes"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieCookingAnimation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="100dp"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="gone"
+        app:lottie_autoPlay="true"
+        app:lottie_fileName="cookingLottie.json"
+        app:lottie_loop="true" />
+
+    <TextView
+        android:id="@+id/notFoundCameraActivityTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="No recipes found. Retry capturing image."
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recipeListRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"/>
+
+</LinearLayout>

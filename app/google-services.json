@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "72627204762",
+    "firebase_url": "https://snap-recipes.firebaseio.com",
+    "project_id": "snap-recipes",
+    "storage_bucket": "snap-recipes.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72627204762:android:995b50d47c9ed1a84c2523",
+        "android_client_info": {
+          "package_name": "com.shubhampandey.snaprecipes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72627204762-tq86ac15gq0siu9fi7mv37un67c6mabf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shubhampandey.snaprecipes",
+            "certificate_hash": "dac993dedeed729b31872e205a2ef79d843711e2"
+          }
+        },
+        {
+          "client_id": "72627204762-ppnuqh7hb25ojorteuik5r73i5em21rl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFlq14NEV0XWVI-4zC3BxeR86tyZp3xfQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72627204762-ppnuqh7hb25ojorteuik5r73i5em21rl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">Snap Recipes</string>
+
+    <string name="clarifai_api_key">1a05011ca198482394d23eb730d96694</string>
+    <string name="max_cooking_time">Max. Cooking Time</string>
+
+
+    <string-array name="vegetables_array">
+        <!-- Indian vegetable in English -->
+        <item>Potato</item>
+        <item>Tomato</item>
+        <item>Onion</item>
+        <item>Lady Finger</item>
+        <item>Broccoli</item>
+        <item>Cabbage</item>
+        <item>Cauliflower</item>
+        <item>Radish</item>
+        <item>Pumpkin</item>
+        <item>Beans</item>
+        <item>Chickpea</item>
+        <item>Pea</item>
+        <item>Sweet potato</item>
+        <item>Carrot</item>
+        <item>Cucumber</item>
+        <item>Brinjal</item>
+
+        <!-- Indian vegetable in Hindi -->
+        <item>Aloo</item>
+        <item>Aaloo</item>
+        <item>Tamatar</item>
+        <item>Pyaz</item>
+        <item>Bhindi</item>
+        <item>Gobi</item>
+        <item>Gobhi</item>
+        <item>Banad Gobi</item>
+        <item>Band Gobi</item>
+        <item>Banad Gobhi</item>
+        <item>Band Gobhi</item>
+        <item>Muli</item>
+        <item>Kaddu</item>
+        <item>Sem</item>
+        <item>Mutter</item>
+        <item>Shakarakand</item>
+        <item>Gajar</item>
+        <item>Kheera</item>
+        <item>Baigan</item>
+    </string-array>
+
+    <!-- For Onboarding Screen -->
+    <string name="One">TextView1</string>
+    <string name="Two">TextView2</string>
+    <string name="Three">TextView3</string>
+    <string name="Swipe">swipe right</string>
+    <string name="Get">Explore Now</string>
+
+</resources>
