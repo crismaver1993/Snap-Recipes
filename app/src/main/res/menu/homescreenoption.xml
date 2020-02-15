@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/myFavoriteMenuOption"
+        android:title="My Favorites"
+        />
     <item
         android:id="@+id/requestRecipeMenuOption"
         android:title="Request a recipe"
-        android:icon="@drawable/ic_filter_list_white_24dp"
        />
 
     <item
         android:id="@+id/developerInfoMenuOption"
-        android:title="Support/Developer Info"
-        android:icon="@drawable/ic_filter_list_white_24dp"
+        android:title="Developer Info"
         />
 </menu>

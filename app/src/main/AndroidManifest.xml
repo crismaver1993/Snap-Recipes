@@ -11,29 +11,35 @@
     <dist:module dist:instant="true" />
 
     <application
+        android:name=".MyFirebasePersistenceClass"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name="com.shubhampandey.snaprecipes.MyFirebasePersistenceClass">
-
-        <activity android:name="com.shubhampandey.snaprecipes.DeveloperInfoActivity"></activity>
-        <activity android:name="com.shubhampandey.snaprecipes.TabActivity" />
-        <activity android:name="com.shubhampandey.snaprecipes.MainActivity" />
+        android:theme="@style/AppTheme">
+        <activity android:name=".MyProfileActivity"></activity>
         <activity
-            android:name="com.shubhampandey.snaprecipes.DisplayRecipeStepsActivity"
+            android:name=".FavoriteListActivity"
+            android:label="My Favorites"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-        <activity android:name="com.shubhampandey.snaprecipes.FilterDishActivity" />
-        <activity android:name="com.shubhampandey.snaprecipes.RecipeListBySearchActivity" />
-        <activity android:name="com.shubhampandey.snaprecipes.DisplayRecipeSourceActivity" />
+        <activity android:name=".DeveloperInfoActivity" />
+        <activity android:name=".TabActivity" />
+        <activity android:name=".MainActivity" />
         <activity
-            android:name="com.shubhampandey.snaprecipes.RecipeDetailsActivity"
+            android:name=".DisplayRecipeStepsActivity"
+            android:label="Recipe Instruction"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-        <activity android:name="com.shubhampandey.snaprecipes.RecipeListByCameraActivity" />
+        <activity android:name=".FilterDishActivity" />
+        <activity android:name=".RecipeListBySearchActivity" />
+        <activity android:name=".DisplayRecipeSourceActivity" />
         <activity
-            android:name="com.shubhampandey.snaprecipes.SplashActivity"
+            android:name=".RecipeDetailsActivity"
+            android:label="Recipe Details"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity android:name=".RecipeListByCameraActivity" />
+        <activity
+            android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

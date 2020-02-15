@@ -608,7 +608,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
     private fun filterResult() {
         val sharedPreferences = this.getSharedPreferences(
-            "com.shubhampandey.yumrecipes",
+            "com.shubhampandey.snaprecipes",
             android.content.Context.MODE_PRIVATE
         )
         // here retrieving the value from shared preference

@@ -11,6 +11,8 @@ import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.FirebaseDatabase
 import com.tapadoo.alerter.Alerter
@@ -35,8 +37,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
 
-
-
     fun showPopup(view: View) {
         PopupMenu(this, view).apply {
             // MainActivity implements OnMenuItemClickListener
@@ -48,6 +48,11 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.myFavoriteMenuOption -> {
+                val intent = Intent(this, FavoriteListActivity::class.java)
+                startActivity(intent)
+                true
+            }
             R.id.requestRecipeMenuOption -> {
                 sendEmail()
                 true
@@ -118,6 +123,4 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
 
     }
-
-
 }

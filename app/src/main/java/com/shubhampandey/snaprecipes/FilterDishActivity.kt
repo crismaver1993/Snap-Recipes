@@ -72,7 +72,7 @@ class FilterDishActivity : AppCompatActivity() {
             //println("Sort value $sortValue")
             //println("Dish Type value $dishTypeValye")
 
-            val sharedPreferences = this.getSharedPreferences("com.shubhampandey.yumrecipes", android.content.Context.MODE_PRIVATE)
+            val sharedPreferences = this.getSharedPreferences("com.shubhampandey.snaprecipes", android.content.Context.MODE_PRIVATE)
             sharedPreferences.edit().putInt("maxCookingTime", maxCookTimeValue).apply()
             sharedPreferences.edit().putString("dishType", dishTypeValye).apply()
 

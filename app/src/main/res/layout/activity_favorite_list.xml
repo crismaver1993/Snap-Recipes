@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="0dp"
+    android:background="@color/lightgray"
+    android:orientation="vertical"
+    android:padding="0dp"
+    tools:context=".FavoriteListActivity">
+
+    <ProgressBar
+        android:id="@+id/favoriteListProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:indeterminate="true"
+        android:indeterminateTint="@android:color/holo_orange_dark"
+        android:max="100" />
+
+    <TextView
+        android:id="@+id/noFavoriteRecipeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No favorite recipe found\n\nLook for the below icon in Recipe Details to add it to your favorites"
+        android:visibility="visible"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:layout_marginTop="140dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="8dp"
+        />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieFavoriteAnimation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="100dp"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="visible"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_fileName="favoriteicon.json"
+        app:lottie_repeatCount="5"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favoriteListRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"/>
+
+</LinearLayout>

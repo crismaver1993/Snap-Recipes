@@ -1,4 +1,4 @@
-# QuiK Recipes
+# Snap Recipes
 
 An android app to get best recipes easily.
 

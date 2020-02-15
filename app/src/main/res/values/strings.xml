@@ -39,6 +39,7 @@
         <item>Muli</item>
         <item>Kaddu</item>
         <item>Sem</item>
+        <item>Matar</item>
         <item>Mutter</item>
         <item>Shakarakand</item>
         <item>Gajar</item>
@@ -52,5 +53,8 @@
     <string name="Three">TextView3</string>
     <string name="Swipe">swipe right</string>
     <string name="Get">Explore Now</string>
+
+
+    <string name="add_to_favorite">Add to favorite</string>
 
 </resources>

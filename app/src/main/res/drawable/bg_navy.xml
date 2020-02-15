@@ -5,6 +5,6 @@
         android:color="#3262A1"/>
 
     <corners
-        android:radius="8dp"
+        android:radius="10dp"
         />
 </shape>

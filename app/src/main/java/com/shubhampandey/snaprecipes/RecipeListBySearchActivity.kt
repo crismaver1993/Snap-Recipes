@@ -160,7 +160,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         count = 0
 
         val sharedPreferences = this.getSharedPreferences(
-            "com.shubhampandey.yumrecipes",
+            "com.shubhampandey.snaprecipes",
             android.content.Context.MODE_PRIVATE
         )
         // here retrieving the value from shared preference
