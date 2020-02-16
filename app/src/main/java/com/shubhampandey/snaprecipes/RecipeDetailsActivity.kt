@@ -1,6 +1,5 @@
 package com.shubhampandey.snaprecipes
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
@@ -12,11 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_recipe_details.*
@@ -45,6 +42,8 @@ class RecipeDetailsActivity : AppCompatActivity() {
     private lateinit var menuFavorite: Menu
 
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
+
+    private val snapRecipesShortLinkPlayStore = "http://bit.ly/2OXbuVm"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,7 +142,7 @@ class RecipeDetailsActivity : AppCompatActivity() {
     // to show menu (vertical 3 dots)
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val menuInflater = menuInflater
-        menuInflater.inflate(R.menu.favoriteoption, menu)
+        menuInflater.inflate(R.menu.recipedetailsextraoptions, menu)
 
         // initialising so that we can change icon for menu item option
         menuFavorite = menu!!
@@ -158,8 +157,23 @@ class RecipeDetailsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
             R.id.addFavoriteMenuOption -> addToFavorite()
+            R.id.shareRecipesMenuOption -> shareRecipe()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun shareRecipe() {
+        Toast.makeText(this, "Sharing recipe!", Toast.LENGTH_SHORT).show()
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            // (Optional) Here we're setting the title of the content
+            putExtra(Intent.EXTRA_TITLE, "Snap Recipes: Smarter way to get recipes")
+            putExtra(Intent.EXTRA_TEXT, "Hey,\n\nLook at this $receivedRecipeTitle tasty recipe.\n\nRecipe source: $receivedRecipeSourceURL\n\nDownload the Snap Recipes app now: $snapRecipesShortLinkPlayStore")
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        startActivity(shareIntent)
     }
 
     private fun addToFavorite() {
@@ -252,6 +266,27 @@ class RecipeDetailsActivity : AppCompatActivity() {
         recipeDetailsDurationTextView.text = "$receivedRecipeDuration min."
         recipeDetailsDifficultyTextView.text = "$receivedRecipePreparationLevel"
         recipeDetailsServingTextView.text = "$receivedRecipeServing"
+
+        for (i in 0 until recipeIngredientsJSONArray!!.length()) {
+            val ingredientTextView = TextView(this)
+            ingredientTextView.setTextColor(ContextCompat.getColor(this, R.color.black))
+
+            // setting up bottom border of textview
+            ingredientTextView.background =
+                ContextCompat.getDrawable(this, R.drawable.textview_border)
+
+            ingredientTextView.setPadding(2, 10, 2, 10)
+
+            // set font family
+            ingredientTextView.typeface =
+                Typeface.create("sans-serif-condensed-medium", Typeface.NORMAL)
+            ingredientTextView.text = recipeIngredientsJSONArray!![i].toString()
+
+            // adding button view to Layout
+            recipeDetailsLinearLayout.addView(ingredientTextView, llParam)
+        }
+
+        /*
         if (receivedRecipeSource!!.contains("IndianHealthyRecipes", true)) {
             val ingredientTextView = TextView(this)
             ingredientTextView.setTextColor(ContextCompat.getColor(this, R.color.black))
@@ -289,7 +324,8 @@ class RecipeDetailsActivity : AppCompatActivity() {
                 recipeDetailsLinearLayout.addView(ingredientTextView, llParam)
             }
             //recipeDetailsIngredientsTextView.text = "$receivedRecipeIngredients"
-        }
+            }
+         */
 
         // downloading and showing image in view
         Picasso.get().load(receivedRecipeImageURL)
