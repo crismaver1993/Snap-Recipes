@@ -256,7 +256,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 return model.predict()
                     .withInputs(ClarifaiInput.forImage(byteArrayOfBitmap))
                     .withMinValue(0.7) // minimum value/prediction value
-                    .withMaxConcepts(6) // maximum recognised concept we should get
+                    .withMaxConcepts(8) // maximum recognised concept we should get
                     .executeSync()
             }
 
