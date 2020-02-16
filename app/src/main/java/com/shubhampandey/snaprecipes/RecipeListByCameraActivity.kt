@@ -256,7 +256,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 return model.predict()
                     .withInputs(ClarifaiInput.forImage(byteArrayOfBitmap))
                     .withMinValue(0.7) // minimum value/prediction value
-                    .withMaxConcepts(5) // maximum recognised concept we should get
+                    .withMaxConcepts(6) // maximum recognised concept we should get
                     .executeSync()
             }
 
@@ -735,7 +735,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         vegetablesItem.add(SearchModel("Beans"))
         vegetablesItem.add(SearchModel("Chickpea"))
         vegetablesItem.add(SearchModel("Pea"))
-        vegetablesItem.add(SearchModel("Sweet potato"))
         vegetablesItem.add(SearchModel("Carrot"))
         vegetablesItem.add(SearchModel("Radish"))
         vegetablesItem.add(SearchModel("Cucumber"))
@@ -756,8 +755,8 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         vegetablesItem.add(SearchModel("Muli"))
         vegetablesItem.add(SearchModel("Kaddu"))
         vegetablesItem.add(SearchModel("Sem"))
+        vegetablesItem.add(SearchModel("Matar"))
         vegetablesItem.add(SearchModel("Mutter"))
-        vegetablesItem.add(SearchModel("Shakarakand"))
         vegetablesItem.add(SearchModel("Gajar"))
         vegetablesItem.add(SearchModel("Kheera"))
         vegetablesItem.add(SearchModel("Baigan"))
