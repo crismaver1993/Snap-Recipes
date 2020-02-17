@@ -415,7 +415,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         }
 
         val firebaseReference = mDatabase!!.getReference("recipes")
-        firebaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            firebaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 Log.e(TAG, "Firebase Data Fetch Cancelled/Error")
             }
@@ -425,6 +425,13 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                     //println("Vegetable: $searchQuery")
                     count = 0
                     for (data in p0.children) {
+
+                        // teminating condition for loop
+                        if (count==maxRecipePerDetectedItem) {
+                            //println("Terminated on $count")
+                            break
+                        }
+
                         if (count < maxRecipePerDetectedItem) {
                             val hashMap: HashMap<String, Any> = data.value as HashMap<String, Any>
                             if (hashMap.size > 0) {
@@ -443,10 +450,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
                                     if ((hashMap["Name"].toString().contains(searchQuery, true)
                                                 || hashMap["Ingredient"].toString().contains(
-                                            searchQuery,
-                                            true
-                                        )
-                                                || hashMap["steps"].toString().contains(
                                             searchQuery,
                                             true
                                         ))
@@ -475,10 +478,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                                                 || hashMap["Ingredient"].toString().contains(
                                             searchQuery,
                                             true
-                                        )
-                                                || hashMap["steps"].toString().contains(
-                                            searchQuery,
-                                            true
                                         ))
                                         && (firebaseRecipeTime <= filterMaxCookTime)
                                     ) {
@@ -492,10 +491,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                                     // Will show recipe upto count 20
                                     if ((hashMap["Name"].toString().contains(searchQuery, true)
                                                 || hashMap["Ingredient"].toString().contains(
-                                            searchQuery,
-                                            true
-                                        )
-                                                || hashMap["steps"].toString().contains(
                                             searchQuery,
                                             true
                                         ))
