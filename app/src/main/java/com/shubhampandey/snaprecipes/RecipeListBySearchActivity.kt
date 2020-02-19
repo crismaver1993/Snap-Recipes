@@ -123,8 +123,10 @@ class RecipeListBySearchActivity : AppCompatActivity() {
 
             // adding splitted string based on space
             val splittedQuery = searchQuery.split(" ")
-            for (item in splittedQuery)
-                searchQueryArrList.add(item)
+            if (splittedQuery.size > 1) {
+                for (item in splittedQuery)
+                    searchQueryArrList.add(item)
+            }
 
             //println("Query on button pressed $splittedQuery")
 
@@ -229,12 +231,12 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         recipeDetailsArrayList.clear()
         recipeJSONObjectArray = JSONArray()
 
-        println("Search Query $searchQueryArr")
+        //println("Search Query $searchQueryArr")
 
         var maxRecipePerDetectedItem = 0
 
         if (searchQueryArr.isNotEmpty()) {
-            maxRecipePerDetectedItem = (maxRecipePerItem/searchQueryArr.size)
+            maxRecipePerDetectedItem = (maxRecipePerItem/(searchQueryArr.size)-1)
         }
 
         val firebaseReference = mDatabase!!.getReference("recipes")
@@ -271,8 +273,8 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                                     }
                                     val firebaseRecipeType: String = hashMap["Type"].toString()
 
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
+                                    if ((hashMap["Name"].toString().startsWith(searchQuery, true)
+                                                || hashMap["Name"].toString().endsWith(
                                             searchQuery,
                                             true
                                         ))
@@ -297,8 +299,8 @@ class RecipeListBySearchActivity : AppCompatActivity() {
 
 
                                     // Will show recipe upto count 20
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
+                                    if ((hashMap["Name"].toString().startsWith(searchQuery, true)
+                                                || hashMap["Name"].toString().endsWith(
                                             searchQuery,
                                             true
                                         ))
@@ -312,8 +314,8 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                                 }
                                 else    {
                                     // Will show recipe upto count 20
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
+                                    if ((hashMap["Name"].toString().startsWith(searchQuery, true)
+                                                || hashMap["Name"].toString().endsWith(
                                             searchQuery,
                                             true
                                         ))
@@ -413,186 +415,6 @@ class RecipeListBySearchActivity : AppCompatActivity() {
             mAdapter!!.notifyDataSetChanged() // it is used to indicate that some new data add/changed
         })
     }
-
-
-
-    /*
-    fun fetchRecipeDataFromFirebase(
-        searchQuery: String,
-        filterMaxCookTime: Int?,
-        filterRecipeType: String?
-    ) {
-        val firebaseReference = mDatabase.getReference("recipes")
-            firebaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Log.e(TAG, "Firebase Data Fetch Cancelled/Error")
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                for (data in p0.children) {
-                    val hashMap: HashMap<String, Any> = data.value as HashMap<String, Any>
-                    if (hashMap.size > 0) {
-                        //println(hashMap)
-
-                        // teminating condition for loop
-                        if (count==20) {
-                            //println("Terminated on $count")
-                            break
-                        }
-
-                        // when filter is applied
-                        // Will show recipe upto count 20
-                        if (filterMaxCookTime != null && filterRecipeType != null && (count < 20)) {
-
-                            // to convert string to int safely
-                            var firebaseRecipeTime = 0
-                            try {
-                                firebaseRecipeTime = hashMap["Time"].toString().toInt()
-                            }
-                            catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                            val firebaseRecipeType: String = hashMap["Type"].toString()
-
-                            if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                        || hashMap["Ingredient"].toString().contains(searchQuery, true))
-                                && (firebaseRecipeTime <= filterMaxCookTime)
-                                && (firebaseRecipeType.equals(filterRecipeType, true))) {
-                                count += 1
-                                //println("Count Inside: $count")
-
-                                val recipeJSONObject = JSONObject(hashMap)
-
-                                // for testing purposes
-                                //println("Output in JSON: $recipeJSONObject")
-
-                                updateUIFromFirebase(recipeJSONObject.toString(), count)
-                            }
-
-                        }
-                        else if (filterMaxCookTime != null && filterRecipeType == null && (count < 20)) {
-                            var firebaseRecipeTime = 0
-                            try {
-                                firebaseRecipeTime = hashMap["Time"].toString().toInt()
-                            }
-                            catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-
-
-                            // Will show recipe upto count 20
-                            if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                        || hashMap["Ingredient"].toString().contains(searchQuery, true))
-                                && (firebaseRecipeTime <= filterMaxCookTime)) {
-                                count += 1
-                                //println("Count Inside: $count")
-                                val recipeJSONObject = JSONObject(hashMap)
-
-                                // for testing purposes
-                                //println("Output in JSON: $recipeJSONObject")
-
-                                updateUIFromFirebase(recipeJSONObject.toString(), count)
-                            }
-                        }
-                        else {
-                            // Will show recipe upto count 20
-                            if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                        || hashMap["Ingredient"].toString().contains(searchQuery, true))
-                                && (count < 20)) {
-                                count += 1
-                                //println("Count Inside: $count")
-                                val recipeJSONObject = JSONObject(hashMap)
-
-                                // for testing purposes
-                                //println("Output in JSON: $recipeJSONObject")
-
-                                updateUIFromFirebase(recipeJSONObject.toString(), count)
-                            }
-                        }
-                    }
-                }
-                if (count == 0) {
-                    Alerter.create(this@RecipeListBySearchActivity)
-                        .setTitle("No recipes found!")
-                        .setText("Try searching again. (eg. Potato or Aloo)")
-                        .setBackgroundColorRes(R.color.orange)
-                        .setDuration(5000)
-                        .show()
-
-                    // disabling Lottie animation
-                    searchlottieCookingAnimation.visibility = View.GONE
-                    searchwaitTitleTextView.visibility = View.GONE
-
-                    notFoundSearchActivityTitleTextView.visibility = View.VISIBLE
-                }
-            }
-        })
-    }
-
-    private fun updateUIFromFirebase(body: String?, count: Int) {
-        notFoundSearchActivityTitleTextView.visibility = View.GONE
-
-        val JSONObjectResult = JSONObject(body)
-        //println("Count: $count")
-
-        // for testing purposes
-        //println("Output in JSON: " + JSONObjectResult + " Count: " + count)
-
-        // accessing each node by name from the JSON Object
-        val recipeDetails = RecipeDetailsDataClass() // RHS is a dataclass
-        recipeDetails.recipeTitle =
-            JSONObjectResult.getString("Name").toString()
-        // checking if key exist or not in JSON
-        if (JSONObjectResult.has("calories"))
-            recipeDetails.recipeCalories =
-                JSONObjectResult.getString("calories").toString()
-        else
-            recipeDetails.recipeCalories =
-                "--"
-        recipeDetails.recipeDuration =
-            JSONObjectResult.getString("Time").toString()
-        recipeDetails.recipeSource =
-            JSONObjectResult.getString("source").toString()
-        recipeDetails.recipeImageURL =
-            JSONObjectResult.getString("Image").toString()
-        recipeDetails.recipeServing =
-            JSONObjectResult.getString("yield").toString()
-        recipeDetails.recipeIngredients =
-            JSONObjectResult.getString("Ingredient").toString()
-        recipeDetails.recipeSourceURL =
-            JSONObjectResult.getString("recipeURL").toString()
-        // checking if key exist or not in JSON
-        if (JSONObjectResult.has("Level"))
-            recipeDetails.cookingDifficulty =
-                JSONObjectResult.getString("Level").toString()
-        else
-            recipeDetails.cookingDifficulty =
-                "N/A."
-        recipeDetails.recipeShortDescription =
-            JSONObjectResult.getString("Description").toString()
-        recipeDetails.recipeType =
-            JSONObjectResult.getString("Type").toString()
-        recipeDetails.recipeCookingSteps =
-            JSONObjectResult.getString("steps").toString()
-
-        recipeDetailsArrayList.add(recipeDetails)
-
-        // Using runOnUiThread because we are currently on another thread (OkHttp creates new thread)
-        // So to access/change Ui elements we have to use this
-        // Otherwise we will get error
-        // If you try to touch view of UI thread from another thread, you will get Android CalledFromWrongThreadException.
-        this@RecipeListBySearchActivity.runOnUiThread(java.lang.Runnable {
-            // when atleast 1 recipe found hide the loaders and texts
-            if (count == 1) {
-                // disabling Lottie animation
-                searchlottieCookingAnimation.visibility = View.GONE
-                searchwaitTitleTextView.visibility = View.GONE
-            }
-            mAdapter!!.notifyDataSetChanged() // it is used to indicate that some new data add/changed
-        })
-    }
-
-     */
 }
 
 
