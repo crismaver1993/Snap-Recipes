@@ -88,7 +88,7 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
             val recipeStepsTextView = TextView(this)
             recipeStepsTextView.setTextColor(ContextCompat.getColor(this, R.color.black))
 
-            recipeStepsTextView.setPadding(2, 10, 2, 10)
+            recipeStepsTextView.setPadding(10, 20, 4, 20)
             recipeStepsTextView.background = ContextCompat.getDrawable(this, R.drawable.textview_border)
 
             // set font family
@@ -104,5 +104,14 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return super.onSupportNavigateUp()
+    }
+
+    fun iLikedRecipe(view: View) {
+        feedbackLL.visibility = View.GONE
+        feedbackDoneTextView.visibility = View.VISIBLE
+    }
+    fun iDislikedRecipe(view: View) {
+        feedbackLL.visibility = View.GONE
+        feedbackDoneTextView.visibility = View.VISIBLE
     }
 }

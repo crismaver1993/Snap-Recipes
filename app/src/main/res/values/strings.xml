@@ -58,4 +58,7 @@
     <string name="add_to_favorite">Add to favorite</string>
     <string name="share_recipe">Share Recipe</string>
 
+    <!-- Stitch App ID-->
+    <string name="stitch_app_id">snaprecipesstitch-gzgad</string>
+
 </resources>

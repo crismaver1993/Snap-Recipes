@@ -275,7 +275,7 @@ class RecipeDetailsActivity : AppCompatActivity() {
             ingredientTextView.background =
                 ContextCompat.getDrawable(this, R.drawable.textview_border)
 
-            ingredientTextView.setPadding(2, 10, 2, 10)
+            ingredientTextView.setPadding(20, 20, 8, 20)
 
             // set font family
             ingredientTextView.typeface =
@@ -340,7 +340,6 @@ class RecipeDetailsActivity : AppCompatActivity() {
                     Log.e(TAG, "${e!!.localizedMessage}")
                     // hiding progress bar
                     recipeDetailsProgressBar.visibility = View.GONE
-
                 }
 
             })

@@ -67,7 +67,7 @@
                 android:layout_marginLeft="25dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginRight="25dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="10dp"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal">
 
@@ -98,7 +98,6 @@
                     android:onClick="findRecipeBySearch"
                     app:srcCompat="@mipmap/search_button" />
             </LinearLayout>
-
 
             <TextView
                 android:id="@+id/searchwaitTitleTextView"

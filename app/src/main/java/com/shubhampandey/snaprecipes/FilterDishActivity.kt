@@ -68,18 +68,23 @@ class FilterDishActivity : AppCompatActivity() {
             }
         }
 
-        if (!TextUtils.equals("0", maxCookTimeValue.toString()) && !TextUtils.equals("any", dishTypeValye)) {
+        if (!TextUtils.equals("0", maxCookTimeValue.toString()) || !TextUtils.equals("any", dishTypeValye)) {
             //println("Sort value $sortValue")
             //println("Dish Type value $dishTypeValye")
 
             val sharedPreferences = this.getSharedPreferences("com.shubhampandey.snaprecipes", android.content.Context.MODE_PRIVATE)
-            sharedPreferences.edit().putInt("maxCookingTime", maxCookTimeValue).apply()
-            sharedPreferences.edit().putString("dishType", dishTypeValye).apply()
-
+            if (maxCookTimeValue > 0 && !dishTypeValye.equals("any", true)) { // when both filters selected
+                sharedPreferences.edit().putInt("maxCookingTime", maxCookTimeValue).apply()
+                sharedPreferences.edit().putString("dishType", dishTypeValye).apply()
+            }
+            else if (maxCookTimeValue > 0) // when only time filter selected
+                sharedPreferences.edit().putInt("maxCookingTime", maxCookTimeValue).apply()
+            else if( !dishTypeValye.equals("any", true))  // when dish type filter selected
+                sharedPreferences.edit().putString("dishType", dishTypeValye).apply()
             finish()
         }
         else {
-            Snackbar.make(view, "Filter options must be selected. For cancelling, Close from top", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(view, "Filter options must be selected", Snackbar.LENGTH_LONG).show()
             Log.w(Tag, "Atleast one filter option must be selected")
         }
     }
