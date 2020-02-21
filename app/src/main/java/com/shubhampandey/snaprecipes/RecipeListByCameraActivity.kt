@@ -299,8 +299,8 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                                 detectedVegetables.add(vegName)
 
                                 // if detected item > 1 then add space to the right
-                                searchQuery += if (detectedCount > 1)
-                                    "$vegName "
+                                searchQuery += if (detectedCount > 0)
+                                    " $vegName"
                                 else
                                     "$vegName"
 

@@ -123,7 +123,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         )
 
         val searchField = findViewById<EditText>(R.id.searchFieldeditText)
-        searchQuery = searchFieldeditText?.text.toString()
+        searchQuery = searchFieldeditText?.text!!.trim().toString()
         if (!searchQuery.isNullOrBlank()) {
 
             // adding complete string
