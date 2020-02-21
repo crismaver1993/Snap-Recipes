@@ -102,12 +102,22 @@
                     android:textColor="@color/orange"
                     android:textSize="20sp" />
 
+                <ProgressBar
+                    android:id="@+id/feedbackProgressBar"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:indeterminate="true"
+                    android:indeterminateTint="@android:color/holo_blue_dark"
+                    android:visibility="gone" />
+
                 <TextView
                     android:layout_margin="24dp"
                     android:id="@+id/feedbackDoneTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thanks for your feedback. \nWe will use your feedback to make Snap Recipes more personalised."
+                    android:text="Thanks for your feedback. \nWe will use your feedback to make Snap Recipes more better."
                     android:visibility="gone"
                     android:textAlignment="center"/>
 

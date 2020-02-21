@@ -59,7 +59,7 @@ class TabActivity : AppCompatActivity() {
         content.add(ItemsClassForOnboarding("Hi there", "Welcome on Snap Recipes", "Have a look of this recipe application \ndesigned for you easy to use and explore ", R.drawable.one))
         content.add(ItemsClassForOnboarding("", "Camera Mode", "Get decent recipes easily by just \ncapturing image of vegetable easy isn't? ", R.drawable.two))
         content.add(ItemsClassForOnboarding("", "Search Mode", "Also, get recipes by just searching for it or \nby just giving vegetable items name in search mode ", R.drawable.three))
-        content.add(ItemsClassForOnboarding("", "Specially For भारत", "Get best recipes in Snap Recipes \napp specially built for Indian recipes ", R.drawable.four))
+        content.add(ItemsClassForOnboarding("", "Get Recipes Easily", "Get best recipes in Snap Recipes \napp specially built for Indian recipes ", R.drawable.four))
 
         //set viewPager
         viewPager = findViewById(R.id.viewPager)

@@ -8,10 +8,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.mongodb.stitch.android.core.Stitch
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoClient
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoCollection
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateOptions
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateResult
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_display_recipe_steps.*
+import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONException
 
@@ -27,6 +36,9 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
 
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
 
+    private lateinit var mongoClient: RemoteMongoClient
+    private lateinit var myCollection: RemoteMongoCollection<org.bson.Document>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_display_recipe_steps)
@@ -38,6 +50,12 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+        initialiseStitch()
+
+        // getting reference of Collection and Documents
+        myCollection = mongoClient.getDatabase("snap_recipes")
+            .getCollection("recipes")
 
         // receiving transmitted data
         val intent = intent
@@ -57,6 +75,15 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
         }
 
         updateUI()
+    }
+
+    private fun initialiseStitch() {
+        val stitchAppClient = Stitch.getDefaultAppClient()
+        // Getting service from Stitch that we want to use
+        mongoClient = stitchAppClient.getServiceClient(
+            RemoteMongoClient.factory,
+            "snap-recipes-mongodb-atlas"
+        )
     }
 
     private fun updateUI() {
@@ -107,11 +134,82 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
     }
 
     fun iLikedRecipe(view: View) {
-        feedbackLL.visibility = View.GONE
-        feedbackDoneTextView.visibility = View.VISIBLE
+        feedbackProgressBar.visibility = View.VISIBLE
+        updatePositiveVoteDataInMongoDB()
     }
+
     fun iDislikedRecipe(view: View) {
+        feedbackProgressBar.visibility = View.VISIBLE
+        updateNegativeVoteDataInMongoDB()
+    }
+
+    private fun updatePositiveVoteDataInMongoDB() {
+        // filter, for where we have to update value
+        val filterDoc = Document("Name", receivedRecipeTitle)
+        // increment count by 1
+        // $inc is keyword for incrementing
+        val updateDoc = Document("\$inc", Document("positiveVoteCount", 1))
+        // It will, Insert a single new document into the collection if update does not match
+        val options = RemoteUpdateOptions().upsert(true)
+
+        val updateTask = myCollection.updateOne(filterDoc, updateDoc, options)
+        updateTask.addOnCompleteListener { p0 ->
+            if ( p0.isSuccessful) {
+
+                updateUIForFeedback()
+
+                if ( p0.result?.upsertedId != null) {
+                    val upsertedId = p0.result!!.upsertedId.toString()
+                    Log.i(TAG, String.format("successfully upserted document with id: %s",
+                        upsertedId))
+                } else {
+                    val numMatched = p0.result!!.matchedCount
+                    val numModified = p0.result!!.modifiedCount
+                    Log.i(TAG, String.format("successfully matched %d and modified %d documents",
+                        numMatched, numModified))
+                }
+            } else {
+                feedbackProgressBar.visibility = View.GONE
+                Log.e(TAG, "failed to update document with: ", p0.exception)
+                Toast.makeText(this, p0.exception!!.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateNegativeVoteDataInMongoDB() {
+        // filter, for where we have to update value
+        val filterDoc = Document("Name", receivedRecipeTitle)
+        // increment count by 1
+        // $inc is keyword for incrementing
+        val updateDoc = Document("\$inc", Document("negativeVoteCount", 1))
+        // It will, Insert a single new document into the collection if update does not match
+        val options = RemoteUpdateOptions().upsert(true)
+
+        val updateTask = myCollection.updateOne(filterDoc, updateDoc, options)
+        updateTask.addOnCompleteListener { p0 ->
+            if ( p0.isSuccessful) {
+                updateUIForFeedback()
+                if ( p0.result?.upsertedId != null) {
+                    val upsertedId = p0.result!!.upsertedId.toString()
+                    Log.i(TAG, String.format("successfully upserted document with id: %s",
+                        upsertedId))
+                } else {
+                    val numMatched = p0.result!!.matchedCount
+                    val numModified = p0.result!!.modifiedCount
+                    Log.i(TAG, String.format("successfully matched %d and modified %d documents",
+                        numMatched, numModified))
+                }
+            } else {
+                feedbackProgressBar.visibility = View.GONE
+                Log.e(TAG, "failed to update document with: ", p0.exception)
+                Toast.makeText(this, p0.exception!!.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateUIForFeedback() {
         feedbackLL.visibility = View.GONE
         feedbackDoneTextView.visibility = View.VISIBLE
+        feedbackProgressBar.visibility = View.GONE
     }
 }

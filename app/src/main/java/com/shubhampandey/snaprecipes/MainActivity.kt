@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             resources.getString(R.string.stitch_app_id)
         )
         val stitchAppClient = Stitch.getDefaultAppClient()
-        //signInUser(stitchAppClient)
+        signInUser(stitchAppClient)
     }
 
     private fun signInUser(

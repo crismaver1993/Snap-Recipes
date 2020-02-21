@@ -29,7 +29,8 @@
             android:name=".DisplayRecipeStepsActivity"
             android:label="Recipe Instruction"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-        <activity android:name=".FilterDishActivity" />
+        <activity android:name=".FilterDishActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".RecipeListBySearchActivity" />
         <activity android:name=".DisplayRecipeSourceActivity" />
         <activity

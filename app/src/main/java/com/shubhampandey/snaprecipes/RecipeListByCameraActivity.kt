@@ -32,11 +32,16 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.mindorks.paracamera.Camera
+import com.mongodb.client.model.Filters.*
+import com.mongodb.stitch.android.core.Stitch
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteFindIterable
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoClient
 import com.tapadoo.alerter.Alerter
 import ir.mirrajabi.searchdialog.SimpleSearchDialogCompat
 import ir.mirrajabi.searchdialog.core.SearchResultListener
 import kotlinx.android.synthetic.main.activity_recipe_list_by_camera.*
 import okhttp3.*
+import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -63,7 +68,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
     // global variable to store details of vegetables recognised in image
     var detectedVegetables = arrayListOf<String>()
 
-    private var mDatabase: FirebaseDatabase? = null
+    //private var mDatabase: FirebaseDatabase? = null
 
     // flag variable which is used to find if atleast 1 recipe is found or not
     var count = 0
@@ -74,6 +79,9 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
 
+    private lateinit var mongoClient: RemoteMongoClient
+    private var searchQuery: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recipe_list_by_camera)
@@ -82,11 +90,12 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
         // initialising firebase
-        mDatabase = FirebaseDatabase.getInstance()
+        //mDatabase = FirebaseDatabase.getInstance()
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
+        initialiseStitch()
 
         camera = Camera.Builder()
             .resetToCorrectOrientation(true)//1 Rotates the camera bitmap to the correct orientation from meta data.
@@ -112,6 +121,15 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
         mAdapter = CustomAdapterForRecylerView(recipeDetailsArrayList)
         mRecyclerView!!.adapter = mAdapter
+    }
+
+    private fun initialiseStitch() {
+        val stitchAppClient = Stitch.getDefaultAppClient()
+        // Getting service from Stitch that we want to use
+        mongoClient = stitchAppClient.getServiceClient(
+            RemoteMongoClient.factory,
+            "snap-recipes-mongodb-atlas"
+        )
     }
 
     override fun onResume() {
@@ -148,7 +166,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
@@ -189,6 +206,8 @@ class RecipeListByCameraActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
         if (resultCode == Activity.RESULT_OK) {
 
             if (requestCode == Camera.REQUEST_TAKE_PHOTO) {
@@ -290,7 +309,10 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                         for (vegName in vegetableArray) {
                             if (vegName.contains(data!!.name().toString(), true)) {
 
+                                // it used just to show horizontal detected Vegetables
                                 detectedVegetables.add(vegName)
+
+                                searchQuery += "$vegName "
 
                                 // creating buttons to show recognised vegetables
                                 val btn = Button(applicationContext)
@@ -327,7 +349,11 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                     }
                     //println("Final list to search for: $detectedVegetables")
                     //Toast.makeText(applicationContext, detectedVegetables, Toast.LENGTH_LONG).show()
-                    fetchRecipeDataFromFirebase(detectedVegetables, null, null)
+                    //fetchRecipeDataFromFirebase(detectedVegetables, null, null)
+
+                    fetchRecipeFromMongoDB(searchQuery!!, null, null)
+
+
                 }
             }
         }.execute()
@@ -398,6 +424,408 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         finish()
     }
 
+    fun openFilterActivity(view: View) {
+        val intent = Intent(this, FilterDishActivity::class.java)
+        intent.putExtra("filterRequestFrom", "RecipeListByCameraActivity")
+        startActivity(intent)
+    }
+
+    private fun filterResult() {
+        val sharedPreferences = this.getSharedPreferences(
+            "com.shubhampandey.snaprecipes",
+            android.content.Context.MODE_PRIVATE
+        )
+        // here retrieving the value from shared preference
+        // first parameter is key and second is default value if value is not found in provided key
+        val storedMaxCookTime = sharedPreferences.getInt("maxCookingTime", 0)
+        val storedDishType = sharedPreferences.getString("dishType", null)
+
+        //println("Shared $storedMaxCookTime  $storedDishType")
+
+        if (storedMaxCookTime != 0 || storedDishType != null) {
+
+            if (!searchQuery.isNullOrBlank()) {
+                // clearing old data from arraylist in case of filter applied
+                // soo only new data will be available to user
+                recipeDetailsArrayList.clear()
+
+                filtersAppliedCameraActivity.visibility = View.VISIBLE
+
+                // enabling Lottie animation
+                lottieCookingAnimation.visibility = View.VISIBLE
+                waitTitleTextView.visibility = View.VISIBLE
+
+                when {
+                    (storedMaxCookTime != 0 && storedDishType != null) -> {
+                        if (storedDishType == "Veg") {
+                            filtersAppliedCameraActivity.text =
+                                "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Vegetarian"
+                        } else {
+                            filtersAppliedCameraActivity.text =
+                                "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Non-Vegetarian"
+                        }
+                        fetchRecipeFromMongoDB(searchQuery!!, storedMaxCookTime, storedDishType)
+                    }
+                    (storedMaxCookTime > 0) -> {
+                        filtersAppliedCameraActivity.text =
+                            "Filters applied:\nMax. cooking time: $storedMaxCookTime min."
+                        fetchRecipeFromMongoDB(searchQuery!!, storedMaxCookTime, null)
+                    }
+                    (storedDishType != null) -> {
+                        if (storedDishType == "Veg") {
+                            filtersAppliedCameraActivity.text =
+                                "Filters applied:\nDish type: Vegetarian"
+                        } else {
+                            filtersAppliedCameraActivity.text =
+                                "Filters applied:\nDish type: Non-Vegetarian"
+                        }
+                        fetchRecipeFromMongoDB(searchQuery!!, null, storedDishType)
+                    }
+                }
+            } else {
+                val searchField = findViewById<EditText>(R.id.searchFieldeditText)
+                searchField.error = "Search query must not be blank!"
+            }
+            // after usage removing values from shared preferences
+            sharedPreferences.edit().remove("maxCookingTime").apply()
+            sharedPreferences.edit().remove("dishType").apply()
+        }
+    }
+
+    fun hideFilterAppliedText() {
+        // hiding filters applied text view
+        // in case of filter applied
+        filtersAppliedCameraActivity.visibility = View.GONE
+    }
+
+    fun editDetectedVegetables(view: View) {
+        // Button constraints
+        // buttons will be added programmatically
+        val llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        llParam.setMargins(16, 0, 0, 0)
+
+        val simpleSearchDialogCompat =
+            SimpleSearchDialogCompat(this, "Add Vegetables", "Try Potato, Tomato, Cauliflower...",
+                null, createVegetableListData(),
+                SearchResultListener<SearchModel> { dialog, item, position ->
+
+
+                    detectedVegetables.add(0, item.title!!)
+
+                    // adding new selected vegetable to recognised item string
+                    searchQuery += "${item.title} "
+
+                    // enabling Lottie animation
+                    lottieCookingAnimation.visibility = View.VISIBLE
+                    waitTitleTextView.visibility = View.VISIBLE
+
+                    // creating buttons to show add vegetables
+                    val btn = Button(applicationContext)
+
+                    // set button design
+                    btn.background = ContextCompat.getDrawable(
+                        this@RecipeListByCameraActivity,
+                        R.drawable.custom_white_botton
+                    )
+                    // set text color
+                    btn.setTextColor(
+                        ContextCompat.getColor(
+                            this@RecipeListByCameraActivity,
+                            R.color.black
+                        )
+                    )
+                    // set font family
+                    btn.typeface =
+                        Typeface.create("sans-serif-condensed-light", Typeface.NORMAL)
+
+                    // adding text in button
+                    btn.text = item!!.title
+
+                    // adding button view to Layout
+                    detectedItemLinearLayout.addView(
+                        btn,
+                        llParam
+                    ) // detectedItemLinearLayout is id of Linear Layout
+
+                    // call function to search again with filters
+                    fetchRecipeFromMongoDB(searchQuery!!, null, null)
+
+                    dialog!!.dismiss()
+                }
+            )
+
+        simpleSearchDialogCompat.show()
+    }
+
+
+    private fun fetchRecipeFromMongoDB(
+        searchQuery: String,
+        filterMaxCookTime: Int?,
+        filterRecipeType: String?
+    ) {
+        // clearing old data from arraylist in case of filter applied
+        // soo only new data will be available to user
+        recipeDetailsArrayList.clear()
+        recipeJSONObjectArray = JSONArray()
+
+        println("Search query $searchQuery")
+
+        // getting reference of Collection and Documents
+        val myCollection = mongoClient.getDatabase("snap_recipes")
+            .getCollection("recipes")
+
+        val result = mutableListOf<Document>()
+        val query: RemoteFindIterable<Document>
+
+        // Using MongoDB query see Documentation
+        if (filterMaxCookTime != null && filterRecipeType != null) { // both filters selected
+            val regexQry = searchQuery.replace(" ", " | ", true)
+            //println("Regex query $regexQry")
+            query = myCollection
+                .find(
+                    and(
+                        regex("Ingredient", regexQry, "i"),
+                        lte("Time", filterMaxCookTime),
+                        eq("Type", filterRecipeType)
+                    )
+                )
+                .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                .limit(25)
+
+        } else if (filterMaxCookTime != null && filterRecipeType == null) { // only time filter selected
+            val regexQry = searchQuery.replace(" ", " | ", true)
+            //println("Regex query $regexQry")
+            query = myCollection
+                .find(
+                    and(
+                        regex("Ingredient", regexQry, "i"),
+                        lte("Time", filterMaxCookTime)
+                    )
+                )
+                .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                .limit(25)
+        } else if (filterMaxCookTime == null && filterRecipeType != null) { // only dish type filter selected
+            val regexQry = searchQuery.replace(" ", " | ", true)
+            //println("Regex query $regexQry")
+            query = myCollection
+                .find(
+                    and(
+                        regex("Ingredient", regexQry, "i"),
+                        eq("Type", filterRecipeType)
+                    )
+                )
+                .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                .limit(25)
+        } else { // no filters selected
+            val regexQry = searchQuery.replace(" ", " | ", true)
+            //println("Regex query $regexQry")
+            query = myCollection
+                .find(regex("Ingredient", regexQry, "i"))
+                .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                .limit(25)
+        }
+        // storing result in variable result which is Mutable list of Document
+        query.into(result).addOnSuccessListener {
+            //println("Result success")
+            var count = 0
+            result.forEach {
+                recipeJSONObjectArray.put(JSONObject(it.toJson())) // adding recipes in Json array
+                count += 1
+            }
+
+            updateUIFromMongoDB(recipeJSONObjectArray, count)
+
+        }.addOnFailureListener {
+            Log.e(TAG, "Can not get result from MongoDB")
+            Alerter.create(this@RecipeListByCameraActivity)
+                .setTitle("Something went wrong!")
+                .setText("Try searching again.")
+                .setBackgroundColorRes(R.color.orange)
+                .setDuration(5000)
+                .show()
+
+            // disabling Lottie animation
+            lottieCookingAnimation.visibility = View.GONE
+            waitTitleTextView.visibility = View.GONE
+        }
+    }
+
+    private fun updateUIFromMongoDB(body: JSONArray, count: Int) {
+
+        notFoundCameraActivityTitleTextView.visibility = View.GONE
+
+        //val JSONObjectResult = JSONObject(body)
+
+        // for testing purposes
+        //println("Output in JSON: " + body + " Count: " + count)
+
+        // hide filter applied text after getting recipe data
+        if (filtersAppliedCameraActivity.isVisible)
+            hideFilterAppliedText()
+
+        if (count >= 1) {
+            for (i in 0 until body.length()) {
+                val JSONObjectResult = body.getJSONObject(i)
+                // accessing each node by name from the JSON Object
+                val recipeDetails = RecipeDetailsDataClass() // RHS is a dataclass
+                recipeDetails.recipeTitle =
+                    JSONObjectResult.getString("Name").toString()
+                // checking if key exist or not in JSON
+                if (JSONObjectResult.has("calories"))
+                    recipeDetails.recipeCalories =
+                        JSONObjectResult.getString("calories").toString()
+                else
+                    recipeDetails.recipeCalories =
+                        "--"
+                recipeDetails.recipeDuration =
+                    JSONObjectResult.getString("Time").toString()
+                recipeDetails.recipeSource =
+                    JSONObjectResult.getString("source").toString()
+                recipeDetails.recipeImageURL =
+                    JSONObjectResult.getString("Image").toString()
+                recipeDetails.recipeServing =
+                    JSONObjectResult.getString("yield").toString()
+                recipeDetails.recipeIngredients =
+                    JSONObjectResult.getString("Ingredient").toString()
+                recipeDetails.recipeSourceURL =
+                    JSONObjectResult.getString("recipeURL").toString()
+                // checking if key exist or not in JSON
+                if (JSONObjectResult.has("Level"))
+                    recipeDetails.cookingDifficulty =
+                        JSONObjectResult.getString("Level").toString()
+                else
+                    recipeDetails.cookingDifficulty =
+                        "N/A."
+                recipeDetails.recipeShortDescription =
+                    JSONObjectResult.getString("Description").toString()
+                recipeDetails.recipeType =
+                    JSONObjectResult.getString("Type").toString()
+                recipeDetails.recipeCookingSteps =
+                    JSONObjectResult.getString("steps").toString()
+
+                recipeDetailsArrayList.add(recipeDetails)
+            }
+        } else {
+            Alerter.create(this@RecipeListByCameraActivity)
+                .setTitle("No recipes found!")
+                .setText("Try searching again. (eg. Potato or Aloo)")
+                .setBackgroundColorRes(R.color.orange)
+                .setDuration(5000)
+                .show()
+
+            // disabling Lottie animation
+            lottieCookingAnimation.visibility = View.GONE
+            waitTitleTextView.visibility = View.GONE
+
+            notFoundCameraActivityTitleTextView.visibility = View.VISIBLE
+        }
+
+        // Using runOnUiThread because we are currently on another thread (OkHttp creates new thread)
+        // So to access/change Ui elements we have to use this
+        // Otherwise we will get error
+        // If you try to touch view of UI thread from another thread, you will get Android CalledFromWrongThreadException.
+        this@RecipeListByCameraActivity.runOnUiThread(java.lang.Runnable {
+            // disabling Lottie animation
+            lottieCookingAnimation.visibility = View.GONE
+            waitTitleTextView.visibility = View.GONE
+            mAdapter!!.notifyDataSetChanged() // it is used to indicate that some new data add/changed
+        })
+    }
+
+    // To create list of vegetable to manually add in camera mode
+    private fun createVegetableListData(): ArrayList<SearchModel>? {
+        val vegetablesItem = ArrayList<SearchModel>()
+        // Indian Vegetable in English
+        vegetablesItem.add(SearchModel("Potato"))
+        vegetablesItem.add(SearchModel("Tomato"))
+        vegetablesItem.add(SearchModel("Onion"))
+        vegetablesItem.add(SearchModel("Lady Finger"))
+        vegetablesItem.add(SearchModel("Broccoli"))
+        vegetablesItem.add(SearchModel("Cabbage"))
+        vegetablesItem.add(SearchModel("Cauliflower"))
+        vegetablesItem.add(SearchModel("Pumpkin"))
+        vegetablesItem.add(SearchModel("Beans"))
+        vegetablesItem.add(SearchModel("Chickpea"))
+        vegetablesItem.add(SearchModel("Pea"))
+        vegetablesItem.add(SearchModel("Carrot"))
+        vegetablesItem.add(SearchModel("Radish"))
+        vegetablesItem.add(SearchModel("Cucumber"))
+        vegetablesItem.add(SearchModel("Brinjal"))
+
+        // Indian Vegetable in Hindi
+        vegetablesItem.add(SearchModel("Aloo"))
+        vegetablesItem.add(SearchModel("Aaloo"))
+        vegetablesItem.add(SearchModel("Tamatar"))
+        vegetablesItem.add(SearchModel("Pyaz"))
+        vegetablesItem.add(SearchModel("Bhindi"))
+        vegetablesItem.add(SearchModel("Gobi"))
+        vegetablesItem.add(SearchModel("Gobhi"))
+        vegetablesItem.add(SearchModel("Band Gobi"))
+        vegetablesItem.add(SearchModel("Band Gobhi"))
+        vegetablesItem.add(SearchModel("Muli"))
+        vegetablesItem.add(SearchModel("Kaddu"))
+        vegetablesItem.add(SearchModel("Sem"))
+        vegetablesItem.add(SearchModel("Matar"))
+        vegetablesItem.add(SearchModel("Mutter"))
+        vegetablesItem.add(SearchModel("Gajar"))
+        vegetablesItem.add(SearchModel("Kheera"))
+        vegetablesItem.add(SearchModel("Baigan"))
+
+
+
+        return vegetablesItem
+    }
+
+    // ============ Firebase search related =================
+    /*
+    private fun filterResult() {
+        val sharedPreferences = this.getSharedPreferences(
+            "com.shubhampandey.snaprecipes",
+            android.content.Context.MODE_PRIVATE
+        )
+        // here retrieving the value from shared preference
+        // first parameter is key and second is default value if value is not found in provided key
+        val storedMaxCookTime = sharedPreferences.getInt("maxCookingTime", 0)
+        val storedDishType = sharedPreferences.getString("dishType", "null")
+
+        if ((storedMaxCookTime != 0 && storedDishType != "null") && (storedMaxCookTime != 0 && storedDishType != "any")) {
+            val searchQuery = detectedVegetables
+
+            if (searchQuery.isNotEmpty()) {
+
+                // displaying filters applied text view
+                filtersAppliedCameraActivity.visibility = View.VISIBLE
+
+                // enabling Lottie animation
+                lottieCookingAnimation.visibility = View.VISIBLE
+                waitTitleTextView.visibility = View.VISIBLE
+
+                if (storedDishType == "Veg") {
+                    filtersAppliedCameraActivity.text =
+                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Vegetarian"
+                } else {
+                    filtersAppliedCameraActivity.text =
+                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Non-Vegetarian"
+                }
+
+                fetchRecipeDataFromFirebase(searchQuery, storedMaxCookTime, storedDishType)
+
+                //println(filterSearchQuery)
+
+                // after usage removing values from shared preferences
+                sharedPreferences.edit().remove("maxCookingTime").apply()
+                sharedPreferences.edit().remove("dishType").apply()
+            }
+        }
+    }
+
+    */
+
+    /*
+    // Firebase recipe searching method
     fun fetchRecipeDataFromFirebase(
         searchQueryArr: ArrayList<String>,
         filterMaxCookTime: Int?,
@@ -595,171 +1023,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         })
     }
 
-    fun openFilterActivity(view: View) {
-        val intent = Intent(this, FilterDishActivity::class.java)
-        intent.putExtra("filterRequestFrom", "RecipeListByCameraActivity")
-        startActivity(intent)
-    }
-
-    private fun filterResult() {
-        val sharedPreferences = this.getSharedPreferences(
-            "com.shubhampandey.snaprecipes",
-            android.content.Context.MODE_PRIVATE
-        )
-        // here retrieving the value from shared preference
-        // first parameter is key and second is default value if value is not found in provided key
-        val storedMaxCookTime = sharedPreferences.getInt("maxCookingTime", 0)
-        val storedDishType = sharedPreferences.getString("dishType", "null")
-
-        if ((storedMaxCookTime != 0 && storedDishType != "null") && (storedMaxCookTime != 0 && storedDishType != "any")) {
-            val searchQuery = detectedVegetables
-
-            if (searchQuery.isNotEmpty()) {
-
-                // displaying filters applied text view
-                filtersAppliedCameraActivity.visibility = View.VISIBLE
-
-                // enabling Lottie animation
-                lottieCookingAnimation.visibility = View.VISIBLE
-                waitTitleTextView.visibility = View.VISIBLE
-
-                if (storedDishType == "Veg") {
-                    filtersAppliedCameraActivity.text =
-                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Vegetarian"
-                }
-                else {
-                    filtersAppliedCameraActivity.text =
-                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Non-Vegetarian"
-                }
-
-                fetchRecipeDataFromFirebase(searchQuery, storedMaxCookTime, storedDishType)
-
-                //println(filterSearchQuery)
-
-                // after usage removing values from shared preferences
-                sharedPreferences.edit().remove("maxCookingTime").apply()
-                sharedPreferences.edit().remove("dishType").apply()
-            }
-        }
-    }
-
-    fun hideFilterAppliedText() {
-        // hiding filters applied text view
-        // in case of filter applied
-        filtersAppliedCameraActivity.visibility = View.GONE
-    }
-
-    fun editDetectedVegetables(view: View) {
-        /*
-        val intent = Intent(this, ModifyDetectedVegetablesActivity::class.java)
-        intent.putExtra("detectedVegetableItemsFromCamera", detectedVegetables)
-        startActivity(intent)
-
-         */
-
-        // Button constraints
-        // buttons will be added programmatically
-        val llParam = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        llParam.setMargins(16, 0, 0, 0)
-
-        val simpleSearchDialogCompat =
-            SimpleSearchDialogCompat(this, "Add Vegetables", "Try Potato, Tomato, Cauliflower...",
-                null, createVegetableListData(),
-                SearchResultListener<SearchModel> { dialog, item, position ->
-
-                    // adding new selected vegetable to recognised item string
-                    detectedVegetables.add(0, item.title!!)
-
-                    // enabling Lottie animation
-                    lottieCookingAnimation.visibility = View.VISIBLE
-                    waitTitleTextView.visibility = View.VISIBLE
-
-                    // creating buttons to show add vegetables
-                    val btn = Button(applicationContext)
-
-                    // set button design
-                    btn.background = ContextCompat.getDrawable(
-                        this@RecipeListByCameraActivity,
-                        R.drawable.custom_white_botton
-                    )
-                    // set text color
-                    btn.setTextColor(
-                        ContextCompat.getColor(
-                            this@RecipeListByCameraActivity,
-                            R.color.black
-                        )
-                    )
-                    // set font family
-                    btn.typeface =
-                        Typeface.create("sans-serif-condensed-light", Typeface.NORMAL)
-
-                    // adding text in button
-                    btn.text = item!!.title
-
-                    // adding button view to Layout
-                    detectedItemLinearLayout.addView(
-                        btn,
-                        llParam
-                    ) // detectedItemLinearLayout is id of Linear Layout
-
-                    // call function to search again with filters
-                    fetchRecipeDataFromFirebase(detectedVegetables, null, null)
-
-                    dialog!!.dismiss()
-                }
-            )
-
-        simpleSearchDialogCompat.show()
-    }
-
-    // To create list of vegetable to manually add in camera mode
-    private fun createVegetableListData(): ArrayList<SearchModel>? {
-        val vegetablesItem = ArrayList<SearchModel>()
-        // Indian Vegetable in English
-        vegetablesItem.add(SearchModel("Potato"))
-        vegetablesItem.add(SearchModel("Tomato"))
-        vegetablesItem.add(SearchModel("Onion"))
-        vegetablesItem.add(SearchModel("Lady Finger"))
-        vegetablesItem.add(SearchModel("Broccoli"))
-        vegetablesItem.add(SearchModel("Cabbage"))
-        vegetablesItem.add(SearchModel("Cauliflower"))
-        vegetablesItem.add(SearchModel("Pumpkin"))
-        vegetablesItem.add(SearchModel("Beans"))
-        vegetablesItem.add(SearchModel("Chickpea"))
-        vegetablesItem.add(SearchModel("Pea"))
-        vegetablesItem.add(SearchModel("Carrot"))
-        vegetablesItem.add(SearchModel("Radish"))
-        vegetablesItem.add(SearchModel("Cucumber"))
-        vegetablesItem.add(SearchModel("Brinjal"))
-
-        // Indian Vegetable in Hindi
-        vegetablesItem.add(SearchModel("Aloo"))
-        vegetablesItem.add(SearchModel("Aaloo"))
-        vegetablesItem.add(SearchModel("Tamatar"))
-        vegetablesItem.add(SearchModel("Pyaz"))
-        vegetablesItem.add(SearchModel("Bhindi"))
-        vegetablesItem.add(SearchModel("Gobi"))
-        vegetablesItem.add(SearchModel("Gobhi"))
-        vegetablesItem.add(SearchModel("Banad Gobi"))
-        vegetablesItem.add(SearchModel("Band Gobi"))
-        vegetablesItem.add(SearchModel("Banad Gobhi"))
-        vegetablesItem.add(SearchModel("Band Gobhi"))
-        vegetablesItem.add(SearchModel("Muli"))
-        vegetablesItem.add(SearchModel("Kaddu"))
-        vegetablesItem.add(SearchModel("Sem"))
-        vegetablesItem.add(SearchModel("Matar"))
-        vegetablesItem.add(SearchModel("Mutter"))
-        vegetablesItem.add(SearchModel("Gajar"))
-        vegetablesItem.add(SearchModel("Kheera"))
-        vegetablesItem.add(SearchModel("Baigan"))
-
-
-
-        return vegetablesItem
-    }
+     */
 
 }
 

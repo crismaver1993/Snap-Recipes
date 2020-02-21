@@ -12,6 +12,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -27,6 +29,7 @@ import kotlinx.android.synthetic.main.activity_recipe_list_by_search.*
 import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Arrays.asList
 
 
 class RecipeListBySearchActivity : AppCompatActivity() {
@@ -54,8 +57,8 @@ class RecipeListBySearchActivity : AppCompatActivity() {
     private var recipeJSONObjectArray: JSONArray = JSONArray()
 
     private lateinit var mongoClient: RemoteMongoClient
-
     private var searchQuery: String? = null
+    private var chip: Chip? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +80,13 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         initialiseStitch()
+
+        // initialising chip
+        chip = findViewById(searchFilterChipGroup.checkedChipId)
+        // Adding listener to chip
+        searchFilterChipGroup.setOnCheckedChangeListener { group, checkedId ->
+            chip = group.findViewById(checkedId)
+        }
 
         // Get the string array
         val vegetableArray = resources.getStringArray(R.array.vegetables_array)
@@ -193,7 +203,6 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         filterResult()
     }
 
-
     private fun filterResult() {
         val sharedPreferences = this.getSharedPreferences(
             "com.shubhampandey.snaprecipes",
@@ -275,26 +284,104 @@ class RecipeListBySearchActivity : AppCompatActivity() {
 
         // Using MongoDB query see Documentation
         if (filterMaxCookTime != null && filterRecipeType != null) { // both filters selected
-            query = myCollection
-                .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
-                .limit(15)
+            when {
+                (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+                (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+
+                    // replacing space " " with | to allow OR in ingredients in search)
+                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    //println("Regex query $regexQry")
+                    query = myCollection
+                        .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(25)
+                }
+                else -> { // if non of the chip selected
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+            }
 
         } else if (filterMaxCookTime != null && filterRecipeType == null) { // only time filter selected
-            query = myCollection
-                .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime)))
-                .limit(15)
-
+            when {
+                (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+                (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    //println("Regex query $regexQry")
+                    query = myCollection
+                        .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(25)
+                }
+                else -> {
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+            }
         } else if( filterMaxCookTime == null && filterRecipeType != null){ // only dish type filter selected
-            query = myCollection
-                .find(and(regex("Name", "^$searchQuery", "i"), eq("Type", filterRecipeType)))
-                .limit(15)
+            when {
+                (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+                (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    //println("Regex query $regexQry")
+                    query = myCollection
+                        .find(and(regex("Ingredient", regexQry, "i"), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(25)
+                }
+                else -> {
+                    query = myCollection
+                        .find(and(regex("Name", "^$searchQuery", "i"), eq("Type", filterRecipeType)))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+            }
         }
-        else {  // general query without filters
-            query = myCollection
-                .find(regex("Name", "^$searchQuery", "i"))
-                .limit(15)
+        else { // no filters selected
+            when {
+                (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    // general query without filters
+                    query = myCollection
+                        .find(regex("Name", "^$searchQuery", "i"))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+                (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
+                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    //println("Regex query $regexQry")
+                    // general query without filters
+                    query = myCollection
+                        .find(regex("Ingredient", regexQry, "i"))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(25)
+                }
+                else -> {
+                    query = myCollection
+                        .find(regex("Name", "^$searchQuery", "i"))
+                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .limit(20)
+                }
+            }
         }
-
         // storing result in variable result which is Mutable list of Document
         query.into(result).addOnSuccessListener {
             //println("Result success")

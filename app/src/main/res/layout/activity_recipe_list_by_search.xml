@@ -54,12 +54,12 @@
                 android:id="@+id/filtersAppliedSearhActivity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textSize="16sp"
                 android:background="@color/red"
-                android:textColor="@color/white"
+                android:padding="10dp"
                 android:text="Filters applied"
-                android:visibility="gone"/>
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -67,7 +67,6 @@
                 android:layout_marginLeft="25dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginRight="25dp"
-                android:layout_marginBottom="10dp"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal">
 
@@ -79,14 +78,14 @@
                     android:background="@drawable/search_layout"
                     android:ems="10"
                     android:fontFamily="@font/nunito_semibold"
-                    android:hint="Try Potato Tomato, Aaloo..."
+                    android:hint="Search dish name or ingredients..."
+                    android:imeOptions="actionDone"
                     android:inputType="text"
                     android:paddingLeft="20dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="10dp"
                     android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:imeOptions="actionDone"/>
+                    android:textSize="16sp" />
 
                 <ImageButton
                     android:id="@+id/searchimageButton"
@@ -98,6 +97,33 @@
                     android:onClick="findRecipeBySearch"
                     app:srcCompat="@mipmap/search_button" />
             </LinearLayout>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/searchFilterChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginBottom="10dp"
+                app:checkedChip="@id/searchByDishChip"
+                app:chipSpacingHorizontal="4dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/searchByDishChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dish search" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/searchByIngredientChip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Search by ingredients" />
+
+            </com.google.android.material.chip.ChipGroup>
 
             <TextView
                 android:id="@+id/searchwaitTitleTextView"
@@ -137,10 +163,10 @@
                 android:id="@+id/searchrecipeListRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:visibility="visible"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
         </LinearLayout>
 
