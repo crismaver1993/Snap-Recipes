@@ -27,10 +27,6 @@ import clarifai2.dto.model.Model
 import clarifai2.dto.model.output.ClarifaiOutput
 import clarifai2.dto.prediction.Concept
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.mindorks.paracamera.Camera
 import com.mongodb.client.model.Filters.*
 import com.mongodb.stitch.android.core.Stitch
@@ -59,21 +55,13 @@ class RecipeListByCameraActivity : AppCompatActivity() {
     private var mAdapter: RecyclerView.Adapter<*>? = null
     var recipeDetailsArrayList = ArrayList<RecipeDetailsDataClass>()
 
-    // Using Edamam API to get recipe details
-    val edamamAppId = "88149556"
-    val edamamApplicationKey = "be8c65cb0db50a3fe48df3c6e95ee6f1"
-
     private val TAG: String = "RecipeListByCamera"
 
     // global variable to store details of vegetables recognised in image
     var detectedVegetables = arrayListOf<String>()
 
-    //private var mDatabase: FirebaseDatabase? = null
-
     // flag variable which is used to find if atleast 1 recipe is found or not
     var count = 0
-
-    val maxRecipePerItem = 20
 
     private var recipeJSONObjectArray: JSONArray = JSONArray()
 
@@ -87,10 +75,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recipe_list_by_camera)
 
         // Making device rotation disabled. Only portrait will be allowed
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-
-        // initialising firebase
-        //mDatabase = FirebaseDatabase.getInstance()
+        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
@@ -300,6 +285,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                     finish()
                     return
                 } else {
+                    var detectedCount = 0
                     //println("Output Prediction: ${predictions.get(0).data()}")
                     //Toast.makeText(applicationContext, "Clarif AI returned results", Toast.LENGTH_LONG).show()
                     for (data in predictions[0].data()) {
@@ -312,7 +298,13 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                                 // it used just to show horizontal detected Vegetables
                                 detectedVegetables.add(vegName)
 
-                                searchQuery += "$vegName "
+                                // if detected item > 1 then add space to the right
+                                searchQuery += if (detectedCount > 1)
+                                    "$vegName "
+                                else
+                                    "$vegName"
+
+                                detectedCount++
 
                                 // creating buttons to show recognised vegetables
                                 val btn = Button(applicationContext)
@@ -347,66 +339,12 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    //println("Final list to search for: $detectedVegetables")
-                    //Toast.makeText(applicationContext, detectedVegetables, Toast.LENGTH_LONG).show()
-                    //fetchRecipeDataFromFirebase(detectedVegetables, null, null)
-
                     fetchRecipeFromMongoDB(searchQuery!!, null, null)
 
 
                 }
             }
         }.execute()
-
-        // Firebase vision AI
-        // To use this, change the function delcaration parameter to Bitmap
-        /*
-        val image = FirebaseVisionImage.fromBitmap(bitmap)
-        /*
-        val options = FirebaseVisionCloudImageLabelerOptions.Builder()
-            .setConfidenceThreshold(0.8F)
-            .build()
-
-         */
-        val labeler = FirebaseVision.getInstance().getCloudImageLabeler()
-
-        labeler.processImage(image)
-            .addOnSuccessListener { labels ->
-
-                Toast.makeText(
-                    this.applicationContext, "Vegetables found",
-                    Toast.LENGTH_SHORT
-                ).show()
-                var sno = 0
-                for (label in labels) {
-                    sno++
-                    val text = label.text
-                    val entityId = label.entityId
-                    val confidence = label.confidence
-                    /*
-                    println("Label Text: $text")
-                    println("Entity ID: $entityId")
-                    println("Confidence: $confidence")
-
-                     */
-
-                    val recipeDetails = RecipeDetailsDataClass() // RHS is a dataclass
-                    recipeDetails.sno = sno
-                    recipeDetails.recipeTitle = text
-                    recipeDetails.recipeDuration = confidence.toString()
-
-                    recipeDetailsArrayList.add(recipeDetails)
-                }
-                mAdapter!!.notifyDataSetChanged() // it is used to indicate that some new data add/changed
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(
-                    this.applicationContext, "No vegetables found",
-                    Toast.LENGTH_SHORT
-                ).show()
-                finish()
-            }
-         */
 
         // enabling Lottie animation
         lottieCookingAnimation.visibility = View.VISIBLE
@@ -444,7 +382,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
         if (storedMaxCookTime != 0 || storedDishType != null) {
 
-            if (!searchQuery.isNullOrBlank()) {
+            if (!searchQuery.isBlank()) {
                 // clearing old data from arraylist in case of filter applied
                 // soo only new data will be available to user
                 recipeDetailsArrayList.clear()
@@ -516,7 +454,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                     detectedVegetables.add(0, item.title!!)
 
                     // adding new selected vegetable to recognised item string
-                    searchQuery += "${item.title} "
+                    searchQuery += " ${item.title}"
 
                     // enabling Lottie animation
                     lottieCookingAnimation.visibility = View.VISIBLE
@@ -571,7 +509,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         recipeDetailsArrayList.clear()
         recipeJSONObjectArray = JSONArray()
 
-        println("Search query $searchQuery")
+        //println("Search query$searchQuery")
 
         // getting reference of Collection and Documents
         val myCollection = mongoClient.getDatabase("snap_recipes")
@@ -773,257 +711,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         vegetablesItem.add(SearchModel("Gajar"))
         vegetablesItem.add(SearchModel("Kheera"))
         vegetablesItem.add(SearchModel("Baigan"))
-
-
-
         return vegetablesItem
     }
-
-    // ============ Firebase search related =================
-    /*
-    private fun filterResult() {
-        val sharedPreferences = this.getSharedPreferences(
-            "com.shubhampandey.snaprecipes",
-            android.content.Context.MODE_PRIVATE
-        )
-        // here retrieving the value from shared preference
-        // first parameter is key and second is default value if value is not found in provided key
-        val storedMaxCookTime = sharedPreferences.getInt("maxCookingTime", 0)
-        val storedDishType = sharedPreferences.getString("dishType", "null")
-
-        if ((storedMaxCookTime != 0 && storedDishType != "null") && (storedMaxCookTime != 0 && storedDishType != "any")) {
-            val searchQuery = detectedVegetables
-
-            if (searchQuery.isNotEmpty()) {
-
-                // displaying filters applied text view
-                filtersAppliedCameraActivity.visibility = View.VISIBLE
-
-                // enabling Lottie animation
-                lottieCookingAnimation.visibility = View.VISIBLE
-                waitTitleTextView.visibility = View.VISIBLE
-
-                if (storedDishType == "Veg") {
-                    filtersAppliedCameraActivity.text =
-                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Vegetarian"
-                } else {
-                    filtersAppliedCameraActivity.text =
-                        "Filters applied:\nMax. cooking time: $storedMaxCookTime min.\nDish type: Non-Vegetarian"
-                }
-
-                fetchRecipeDataFromFirebase(searchQuery, storedMaxCookTime, storedDishType)
-
-                //println(filterSearchQuery)
-
-                // after usage removing values from shared preferences
-                sharedPreferences.edit().remove("maxCookingTime").apply()
-                sharedPreferences.edit().remove("dishType").apply()
-            }
-        }
-    }
-
-    */
-
-    /*
-    // Firebase recipe searching method
-    fun fetchRecipeDataFromFirebase(
-        searchQueryArr: ArrayList<String>,
-        filterMaxCookTime: Int?,
-        filterRecipeType: String?
-    ) {
-        // clearing old data from arraylist in case of filter applied
-        // soo only new data will be available to user
-        recipeDetailsArrayList.clear()
-        recipeJSONObjectArray = JSONArray()
-
-        var maxRecipePerDetectedItem = 0
-
-        if (searchQueryArr.isNotEmpty()) {
-            maxRecipePerDetectedItem = (maxRecipePerItem/searchQueryArr.size)
-        }
-
-        val firebaseReference = mDatabase!!.getReference("recipes")
-            firebaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                Log.e(TAG, "Firebase Data Fetch Cancelled/Error")
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                for (searchQuery in searchQueryArr) {
-                    //println("Vegetable: $searchQuery")
-                    count = 0
-                    for (data in p0.children) {
-
-                        // teminating condition for loop
-                        if (count==maxRecipePerDetectedItem) {
-                            //println("Terminated on $count")
-                            break
-                        }
-
-                        if (count < maxRecipePerDetectedItem) {
-                            val hashMap: HashMap<String, Any> = data.value as HashMap<String, Any>
-                            if (hashMap.size > 0) {
-                                //println(hashMap)
-
-                                if (filterMaxCookTime != null && filterRecipeType != null) {
-
-                                    // to convert string to int safely
-                                    var firebaseRecipeTime = 0
-                                    try {
-                                        firebaseRecipeTime = hashMap["Time"].toString().toInt()
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-                                    val firebaseRecipeType: String = hashMap["Type"].toString()
-
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
-                                            searchQuery,
-                                            true
-                                        ))
-                                        && (firebaseRecipeTime <= filterMaxCookTime)
-                                        && (firebaseRecipeType.equals(filterRecipeType, true))
-                                    ) {
-                                        count += 1
-                                        //println("Count Inside: $count")
-
-                                        recipeJSONObjectArray.put(JSONObject(hashMap))
-                                        //println("Time and Type Count : $count")
-                                    }
-
-                                }
-                                else if (filterMaxCookTime != null && filterRecipeType == null) {
-                                    var firebaseRecipeTime = 0
-                                    try {
-                                        firebaseRecipeTime = hashMap["Time"].toString().toInt()
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-
-
-                                    // Will show recipe upto count 20
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
-                                            searchQuery,
-                                            true
-                                        ))
-                                        && (firebaseRecipeTime <= filterMaxCookTime)
-                                    ) {
-                                        count += 1
-                                        //println("Count Inside: $count")
-                                        recipeJSONObjectArray.put(JSONObject(hashMap))
-                                        //println("Time Count : $count")
-                                    }
-                                }
-                                else    {
-                                    // Will show recipe upto count 20
-                                    if ((hashMap["Name"].toString().contains(searchQuery, true)
-                                                || hashMap["Ingredient"].toString().contains(
-                                            searchQuery,
-                                            true
-                                        ))
-                                    ) {
-                                        count += 1
-                                        //println("Count Inside: $count")
-
-                                        recipeJSONObjectArray.put(JSONObject(hashMap))
-                                        //println("Any Count : $count")
-                                    }
-                                }
-                            }
-                        }
-                        else
-                            break
-                    }
-                }
-                updateUIFromFirebase(recipeJSONObjectArray, count)
-            }
-        })
-    }
-
-    private fun updateUIFromFirebase(body: JSONArray, count: Int) {
-
-        notFoundCameraActivityTitleTextView.visibility = View.GONE
-
-        //val JSONObjectResult = JSONObject(body)
-
-        // for testing purposes
-        //println("Output in JSON: " + body + " Count: " + count)
-
-        // hide filter applied text after getting recipe data
-        if (filtersAppliedCameraActivity.isVisible)
-            hideFilterAppliedText()
-
-        if (count >= 1) {
-            for (i in 0 until body.length()) {
-                val JSONObjectResult = body.getJSONObject(i)
-                // accessing each node by name from the JSON Object
-                val recipeDetails = RecipeDetailsDataClass() // RHS is a dataclass
-                recipeDetails.recipeTitle =
-                    JSONObjectResult.getString("Name").toString()
-                // checking if key exist or not in JSON
-                if (JSONObjectResult.has("calories"))
-                    recipeDetails.recipeCalories =
-                        JSONObjectResult.getString("calories").toString()
-                else
-                    recipeDetails.recipeCalories =
-                        "--"
-                recipeDetails.recipeDuration =
-                    JSONObjectResult.getString("Time").toString()
-                recipeDetails.recipeSource =
-                    JSONObjectResult.getString("source").toString()
-                recipeDetails.recipeImageURL =
-                    JSONObjectResult.getString("Image").toString()
-                recipeDetails.recipeServing =
-                    JSONObjectResult.getString("yield").toString()
-                recipeDetails.recipeIngredients =
-                    JSONObjectResult.getString("Ingredient").toString()
-                recipeDetails.recipeSourceURL =
-                    JSONObjectResult.getString("recipeURL").toString()
-                // checking if key exist or not in JSON
-                if (JSONObjectResult.has("Level"))
-                    recipeDetails.cookingDifficulty =
-                        JSONObjectResult.getString("Level").toString()
-                else
-                    recipeDetails.cookingDifficulty =
-                        "N/A."
-                recipeDetails.recipeShortDescription =
-                    JSONObjectResult.getString("Description").toString()
-                recipeDetails.recipeType =
-                    JSONObjectResult.getString("Type").toString()
-                recipeDetails.recipeCookingSteps =
-                    JSONObjectResult.getString("steps").toString()
-
-                recipeDetailsArrayList.add(recipeDetails)
-            }
-        } else {
-            Alerter.create(this@RecipeListByCameraActivity)
-                .setTitle("No recipes found!")
-                .setText("Try re-capturing vegetable image again.")
-                .setBackgroundColorRes(R.color.orange)
-                .setDuration(10000)
-                .show()
-
-            // disabling Lottie animation
-            lottieCookingAnimation.visibility = View.GONE
-            waitTitleTextView.visibility = View.GONE
-
-            notFoundCameraActivityTitleTextView.visibility = View.VISIBLE
-        }
-
-        // Using runOnUiThread because we are currently on another thread (OkHttp creates new thread)
-        // So to access/change Ui elements we have to use this
-        // Otherwise we will get error
-        // If you try to touch view of UI thread from another thread, you will get Android CalledFromWrongThreadException.
-        this@RecipeListByCameraActivity.runOnUiThread(java.lang.Runnable {
-            // disabling Lottie animation
-            lottieCookingAnimation.visibility = View.GONE
-            waitTitleTextView.visibility = View.GONE
-            mAdapter!!.notifyDataSetChanged() // it is used to indicate that some new data add/changed
-        })
-    }
-
-     */
-
 }
 

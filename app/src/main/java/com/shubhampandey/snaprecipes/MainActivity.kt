@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.view.menu.MenuPopupHelper
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.database.FirebaseDatabase
 import com.mongodb.stitch.android.core.Stitch
 import com.mongodb.stitch.android.core.StitchAppClient
 import com.mongodb.stitch.core.auth.providers.anonymous.AnonymousCredential
@@ -25,7 +24,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
-    private var mDatabase: FirebaseDatabase? = null
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
 
     private val TAG = "MainActivity"
@@ -37,8 +35,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         // Making device rotation disabled. Only portrait will be allowed
         this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        // initialising firebase
-        mDatabase = FirebaseDatabase.getInstance()
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 

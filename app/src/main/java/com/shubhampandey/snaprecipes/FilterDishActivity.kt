@@ -58,7 +58,7 @@ class FilterDishActivity : AppCompatActivity() {
 
         val dishTypeValye = when (dishTypeSelectedID) {
             R.id.vegradioButton -> {
-                "Veg"   // these string are according to the data stored in firebase
+                "Veg"   // these string are according to the data stored in db
             }
             R.id.nonVegRadioButton -> {
                 "Non_Veg"
