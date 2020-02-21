@@ -11,8 +11,8 @@ android {
         applicationId "com.shubhampandey.snaprecipes"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 6
-        versionName '1.5'
+        versionCode 7
+        versionName '1.6'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // to use SVG enable this
         vectorDrawables.useSupportLibrary = true

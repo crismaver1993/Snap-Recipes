@@ -38,11 +38,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
-        // Initialise Stitch
-        // Required only for one time initialisation
-        Stitch.initializeDefaultAppClient(
-            resources.getString(R.string.stitch_app_id)
-        )
         val stitchAppClient = Stitch.getDefaultAppClient()
         signInUser(stitchAppClient)
     }
