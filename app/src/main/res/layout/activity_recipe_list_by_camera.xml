@@ -133,6 +133,16 @@
         android:textSize="14sp"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/notFoundCameraActivityImageView"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/ic_refresh_purple_512dp"
+        android:onClick="restartCameraActivity"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="50dp"
+        android:visibility="gone"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recipeListRecyclerView"
         android:layout_width="match_parent"

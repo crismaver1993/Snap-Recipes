@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Typeface
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -41,7 +40,6 @@ import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -228,142 +226,146 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         // clear count flag variable
         count = 0
 
-        // Get the string array
-        // It is used to compare result of prediction with our vegetables list
-        val vegetableArray = resources.getStringArray(R.array.vegetables_array)
-
-        // Button constraints
-        // buttons will be added programmatically
-        val llParam = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        llParam.setMargins(16, 0, 0, 0)
-
         // showing modify vegetables detected item options
         addVegetableItemsImageView.visibility = View.VISIBLE
 
-        object : AsyncTask<Void?, Void?, ClarifaiResponse<List<ClarifaiOutput<Concept?>>?>>() {
-
-            override fun doInBackground(vararg params: Void?): ClarifaiResponse<List<ClarifaiOutput<Concept?>>?> {
-                val model: Model<Concept> = client.defaultModels.foodModel()
-
-                // To get concept names from the given model ID
-                /*
-                val testRes = client.getModelByID("bd367be194cf45149e75f01d59f77ba7").executeSync()
-                //println("Test Response:" + testRes.get())
-                val listConcept = testRes.get().outputInfo()
-                println(listConcept)
-
-                 */
-
-                return model.predict()
-                    .withInputs(ClarifaiInput.forImage(byteArrayOfBitmap))
-                    .withMinValue(0.7) // minimum value/prediction value
-                    .withMaxConcepts(8) // maximum recognised concept we should get
-                    .executeSync()
-            }
-
-            override fun onPostExecute(response: ClarifaiResponse<List<ClarifaiOutput<Concept?>>?>) {
-                if (!response.isSuccessful) {
-                    Toast.makeText(
-                        applicationContext,
-                        "Error while contacting to server",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    finish()
-                    return
-                }
-                val predictions = response.get()
-                if (predictions.isEmpty()) {
-                    //println("Clarif AI did not return any results")
-                    Toast.makeText(
-                        applicationContext,
-                        "No result found. Retry capturing image",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    finish()
-                    return
-                } else {
-                    var detectedCount = 0
-                    //println("Output Prediction: ${predictions.get(0).data()}")
-                    //Toast.makeText(applicationContext, "Clarif AI returned results", Toast.LENGTH_LONG).show()
-                    for (data in predictions[0].data()) {
-
-                        //println("Detected items: ${data!!.name()}")
-
-                        for (vegName in vegetableArray) {
-                            if (vegName.contains(data!!.name().toString(), true)) {
-
-                                // it used just to show horizontal detected Vegetables
-                                detectedVegetables.add(vegName)
-
-                                // if detected item > 1 then add space to the right
-                                searchQuery += if (detectedCount > 0)
-                                    " $vegName"
-                                else
-                                    "$vegName"
-
-                                detectedCount++
-
-                                // creating buttons to show recognised vegetables
-                                val btn = Button(applicationContext)
-
-                                // set button design
-                                btn.background = ContextCompat.getDrawable(
-                                    this@RecipeListByCameraActivity,
-                                    R.drawable.custom_white_botton
-                                )
-                                // set text color
-                                btn.setTextColor(
-                                    ContextCompat.getColor(
-                                        this@RecipeListByCameraActivity,
-                                        R.color.black
-                                    )
-                                )
-                                // set font family
-                                btn.typeface =
-                                    Typeface.create("sans-serif-condensed-light", Typeface.NORMAL)
-
-                                // adding text in button
-                                btn.text = data!!.name()
-
-                                // adding button view to Layout
-                                detectedItemLinearLayout.addView(
-                                    btn,
-                                    llParam
-                                ) // detectedItemLinearLayout is id of Linear Layout
-
-                                // stop loop if items matches as early as possible
-                                break
-                            }
-                        }
-                    }
-                    if (detectedCount > 0)
-                        fetchRecipeFromMongoDB(searchQuery!!, null, null)
-                    else {
-                        Alerter.create(this@RecipeListByCameraActivity)
-                            .setTitle("No vegetable detected!")
-                            .setText("Try re-capturing vegetable image again.")
-                            .setBackgroundColorRes(R.color.orange)
-                            .setDuration(5000)
-                            .show()
-
-                        // disabling Lottie animation
-                        lottieCookingAnimation.visibility = View.GONE
-                        waitTitleTextView.visibility = View.GONE
-
-                        notFoundCameraActivityTitleTextView.visibility = View.VISIBLE
-                    }
-
-
-                }
-            }
-        }.execute()
+        val getimageprediction = GetImagePrediction()
+        getimageprediction.execute(byteArrayOfBitmap) // passing byteArray to coroutineAsyncTask
 
         // enabling Lottie animation
         lottieCookingAnimation.visibility = View.VISIBLE
         waitTitleTextView.visibility = View.VISIBLE
+    }
+
+    // Created inner class to get prediction in background
+    // Extended customs AsyncTask class to predict
+    // Used Kotlin coroutines to do task in background
+    inner class GetImagePrediction: CoroutineAsyncTask<ByteArray?, Void?, ClarifaiResponse<List<ClarifaiOutput<Concept?>>?>>() {
+        override fun onPostExecute(result: ClarifaiResponse<List<ClarifaiOutput<Concept?>>?>) {
+            if (!result.isSuccessful) {
+                Toast.makeText(
+                    applicationContext,
+                    "Error while contacting to server",
+                    Toast.LENGTH_LONG
+                ).show()
+                finish()
+                return
+            }
+            val predictions = result.get()
+            if (predictions.isEmpty()) {
+                //println("Clarif AI did not return any results")
+                Toast.makeText(
+                    applicationContext,
+                    "No result found. Retry capturing image",
+                    Toast.LENGTH_LONG
+                ).show()
+                finish()
+                return
+            } else {
+                // Button constraints
+                // buttons will be added programmatically
+                val llParam = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                llParam.setMargins(16, 0, 0, 0)
+
+                // Get the string array
+                // It is used to compare result of prediction with our vegetables list
+                val vegetableArray = resources.getStringArray(R.array.vegetables_array)
+
+                var detectedCount = 0
+                //println("Output Prediction: ${predictions.get(0).data()}")
+                //Toast.makeText(applicationContext, "Clarif AI returned results", Toast.LENGTH_LONG).show()
+                for (data in predictions[0].data()) {
+
+                    //println("Detected items: ${data!!.name()}")
+
+                    for (vegName in vegetableArray) {
+                        if (vegName.contains(data!!.name().toString(), true)) {
+
+                            // it used just to show horizontal detected Vegetables
+                            detectedVegetables.add(vegName)
+
+                            // if detected item > 1 then add space to the right
+                            searchQuery += if (detectedCount > 0)
+                                " $vegName"
+                            else
+                                vegName
+
+                            detectedCount++
+
+                            // creating buttons to show recognised vegetables
+                            val btn = Button(applicationContext)
+
+                            // set button design
+                            btn.background = ContextCompat.getDrawable(
+                                this@RecipeListByCameraActivity,
+                                R.drawable.custom_white_botton
+                            )
+                            // set text color
+                            btn.setTextColor(
+                                ContextCompat.getColor(
+                                    this@RecipeListByCameraActivity,
+                                    R.color.black
+                                )
+                            )
+                            // set font family
+                            btn.typeface =
+                                Typeface.create("sans-serif-condensed-light", Typeface.NORMAL)
+
+                            // adding text in button
+                            btn.text = data!!.name()
+
+                            // adding button view to Layout
+                            detectedItemLinearLayout.addView(
+                                btn,
+                                llParam
+                            ) // detectedItemLinearLayout is id of Linear Layout
+
+                            // stop loop if items matches as early as possible
+                            break
+                        }
+                    }
+                }
+                if (detectedCount > 0)
+                    fetchRecipeFromMongoDB(searchQuery!!, null, null)
+                else {
+                    Alerter.create(this@RecipeListByCameraActivity)
+                        .setTitle("No vegetable detected!")
+                        .setText("Try re-capturing vegetable image again.")
+                        .setBackgroundColorRes(R.color.orange)
+                        .setDuration(5000)
+                        .show()
+
+                    // disabling Lottie animation
+                    lottieCookingAnimation.visibility = View.GONE
+                    waitTitleTextView.visibility = View.GONE
+
+                    notFoundCameraActivityTitleTextView.visibility = View.VISIBLE
+                    notFoundCameraActivityImageView.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        override fun doInBackground(param: ByteArray?): ClarifaiResponse<List<ClarifaiOutput<Concept?>>?> {
+            val model: Model<Concept> = client.defaultModels.foodModel()
+
+            // To get concept names from the given model ID
+            /*
+            val testRes = client.getModelByID("bd367be194cf45149e75f01d59f77ba7").executeSync()
+            //println("Test Response:" + testRes.get())
+            val listConcept = testRes.get().outputInfo()
+            println(listConcept)
+
+             */
+
+            return model.predict()
+                .withInputs(ClarifaiInput.forImage(param!!))
+                .withMinValue(0.7) // minimum value/prediction value
+                .withMaxConcepts(8) // maximum recognised concept we should get
+                .executeSync()
+        }
     }
 
     override fun onDestroy() {
@@ -463,7 +465,15 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
         // Using MongoDB query see Documentation
         if (filterMaxCookTime != null && filterRecipeType != null) { // both filters selected
-            val regexQry = searchQuery.replace(" ", " | ", true)
+            // checking if user has entered a single word in ingredient
+            // then just add space to the right end of string
+            // other wise if more than 1 words entered by user
+            // add regex OR between space of words
+            val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                searchQuery.replace(" ", " | ", true)
+            } else {
+                "$searchQuery "
+            }
             //println("Regex query $regexQry")
             query = myCollection
                 .find(
@@ -477,7 +487,15 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 .limit(25)
 
         } else if (filterMaxCookTime != null && filterRecipeType == null) { // only time filter selected
-            val regexQry = searchQuery.replace(" ", " | ", true)
+            // checking if user has entered a single word in ingredient
+            // then just add space to the right end of string
+            // other wise if more than 1 words entered by user
+            // add regex OR between space of words
+            val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                searchQuery.replace(" ", " | ", true)
+            } else {
+                "$searchQuery "
+            }
             //println("Regex query $regexQry")
             query = myCollection
                 .find(
@@ -489,7 +507,15 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                 .limit(25)
         } else if (filterMaxCookTime == null && filterRecipeType != null) { // only dish type filter selected
-            val regexQry = searchQuery.replace(" ", " | ", true)
+            // checking if user has entered a single word in ingredient
+            // then just add space to the right end of string
+            // other wise if more than 1 words entered by user
+            // add regex OR between space of words
+            val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                searchQuery.replace(" ", " | ", true)
+            } else {
+                "$searchQuery "
+            }
             //println("Regex query $regexQry")
             query = myCollection
                 .find(
@@ -501,7 +527,15 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                 .limit(25)
         } else { // no filters selected
-            val regexQry = searchQuery.replace(" ", " | ", true)
+            // checking if user has entered a single word in ingredient
+            // then just add space to the right end of string
+            // other wise if more than 1 words entered by user
+            // add regex OR between space of words
+            val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                searchQuery.replace(" ", " | ", true)
+            } else {
+                "$searchQuery "
+            }
             //println("Regex query $regexQry")
             query = myCollection
                 .find(regex("Ingredient", regexQry, "i"))
@@ -537,6 +571,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
     private fun updateUIFromMongoDB(body: JSONArray, count: Int) {
 
         notFoundCameraActivityTitleTextView.visibility = View.GONE
+        notFoundCameraActivityImageView.visibility = View.GONE
 
         //val JSONObjectResult = JSONObject(body)
 
@@ -602,6 +637,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
             waitTitleTextView.visibility = View.GONE
 
             notFoundCameraActivityTitleTextView.visibility = View.VISIBLE
+            notFoundCameraActivityImageView.visibility = View.VISIBLE
         }
 
         // Using runOnUiThread because we are currently on another thread (OkHttp creates new thread)
@@ -684,7 +720,6 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         simpleSearchDialogCompat.show()
     }
 
-
     // To create list of vegetable to manually add in camera mode
     private fun createVegetableListData(): ArrayList<SearchModel>? {
         val vegetablesItem = ArrayList<SearchModel>()
@@ -724,6 +759,10 @@ class RecipeListByCameraActivity : AppCompatActivity() {
         vegetablesItem.add(SearchModel("Kheera"))
         vegetablesItem.add(SearchModel("Baigan"))
         return vegetablesItem
+    }
+
+    fun restartCameraActivity(view: View) {
+        recreate()
     }
 }
 

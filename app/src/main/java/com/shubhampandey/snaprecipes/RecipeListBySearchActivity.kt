@@ -70,6 +70,11 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         // Adding listener to chip
         searchFilterChipGroup.setOnCheckedChangeListener { group, checkedId ->
             chip = group.findViewById(checkedId)
+            if (checkedId == R.id.searchByDishChip)
+                searchFieldeditText.hint = "Try dish name (eg. Matar Paneer)"
+            else
+                searchFieldeditText.hint = "Try ingredients separated by space"
+
         }
 
         // Get the string array
@@ -123,23 +128,8 @@ class RecipeListBySearchActivity : AppCompatActivity() {
         )
 
         val searchField = findViewById<EditText>(R.id.searchFieldeditText)
-        searchQuery = searchFieldeditText?.text!!.trim().toString()
+        searchQuery = searchField.text.trim().toString()
         if (!searchQuery.isNullOrBlank()) {
-
-            // adding complete string
-            //searchQueryArrList.add(searchQuery)
-
-            /*
-            // adding splitted string based on space
-            val splittedQuery = searchQuery.split(" ")
-            if (splittedQuery.size > 1) {
-                for (item in splittedQuery)
-                    searchQueryArrList.add(item)
-            }
-
-             */
-
-            //println("Query on button pressed $splittedQuery")
 
             // clearing old data from arraylist which were showing in recyclerview
             // soo only new data will be available to user after applying filter
@@ -275,9 +265,15 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-
-                    // replacing space " " with | to allow OR in ingredients in search)
-                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    // checking if user has entered a single word in ingredient
+                    // then just add space to the right end of string
+                    // other wise if more than 1 words entered by user
+                    // add regex OR between space of words
+                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                        searchQuery.replace(" ", " | ", true)
+                    } else {
+                        "$searchQuery "
+                    }
                     //println("Regex query $regexQry")
                     query = myCollection
                         .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
@@ -301,7 +297,15 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    // checking if user has entered a single word in ingredient
+                    // then just add space to the right end of string
+                    // other wise if more than 1 words entered by user
+                    // add regex OR between space of words
+                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                        searchQuery.replace(" ", " | ", true)
+                    } else {
+                        "$searchQuery "
+                    }
                     //println("Regex query $regexQry")
                     query = myCollection
                         .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime)))
@@ -324,7 +328,15 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    val regexQry = searchQuery.replace(" ", " | ", true)
+                    // checking if user has entered a single word in ingredient
+                    // then just add space to the right end of string
+                    // other wise if more than 1 words entered by user
+                    // add regex OR between space of words
+                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                        searchQuery.replace(" ", " | ", true)
+                    } else {
+                        "$searchQuery "
+                    }
                     //println("Regex query $regexQry")
                     query = myCollection
                         .find(and(regex("Ingredient", regexQry, "i"), eq("Type", filterRecipeType)))
@@ -349,8 +361,16 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    val regexQry = searchQuery.replace(" ", " | ", true)
-                    //println("Regex query $regexQry")
+                    // checking if user has entered a single word in ingredient
+                    // then just add space to the right end of string
+                    // other wise if more than 1 words entered by user
+                    // add regex OR between space of words
+                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
+                        searchQuery.replace(" ", " | ", true)
+                    } else {
+                        "$searchQuery "
+                    }
+                    //println("Regex query Start{$regexQry}End")
                     // general query without filters
                     query = myCollection
                         .find(regex("Ingredient", regexQry, "i"))
