@@ -12,8 +12,6 @@ import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.appcompat.view.menu.MenuPopupHelper
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.mongodb.stitch.android.core.Stitch
 import com.mongodb.stitch.android.core.StitchAppClient

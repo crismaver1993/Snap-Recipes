@@ -11,8 +11,8 @@ android {
         applicationId "com.shubhampandey.snaprecipes"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 8
-        versionName '1.7'
+        versionCode 9
+        versionName '1.8'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // to use SVG enable this
         vectorDrawables.useSupportLibrary = true
@@ -33,19 +33,6 @@ android {
             // Android Gradle plugin.
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    // For Android App Bundle
-    bundle {
-        language {
-            enableSplit = true
-        }
-        density {
-            enableSplit = true
-        }
-        abi {
-            enableSplit = true
         }
     }
 }
