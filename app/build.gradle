@@ -11,8 +11,8 @@ android {
         applicationId "com.shubhampandey.snaprecipes"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 9
-        versionName '1.8'
+        versionCode 10
+        versionName '1.9'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // to use SVG enable this
         vectorDrawables.useSupportLibrary = true
@@ -25,14 +25,25 @@ android {
     }
     buildTypes {
         release {
-            // Enables code shrinking, obfuscation, and optimization for only
-            // your project's release build type.
-            minifyEnabled true
-
-            // Enables resource shrinking, which is performed by the
-            // Android Gradle plugin.
-            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // To support Android app bundle
+    // Add this block and enable/disable the parameters as follows
+    bundle {
+        density {
+            // Different APKs are generated for devices with different screen densities; true by default.
+            enableSplit true
+        }
+        abi {
+            // Different APKs are generated for devices with different CPU architectures; true by default.
+            enableSplit true
+        }
+        language {
+            // This is disabled so that the App Bundle does NOT split the APK for each language.
+            // We're gonna use the same APK for all languages.
+            enableSplit false
         }
     }
 }
