@@ -25,7 +25,10 @@ import kotlinx.android.synthetic.main.activity_recipe_list_by_search.*
 import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.*
 import java.util.Arrays.asList
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 
 class RecipeListBySearchActivity : AppCompatActivity() {
@@ -265,18 +268,14 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    // checking if user has entered a single word in ingredient
-                    // then just add space to the right end of string
-                    // other wise if more than 1 words entered by user
-                    // add regex OR between space of words
-                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                        searchQuery.replace(" ", " | ", true)
-                    } else {
-                        "$searchQuery "
+                    // creating a list of entered qry separated by space
+                    val itemList = searchQuery.split(" ")
+                    val mList = mutableListOf<Pattern>() // empty mutable list
+                    for( item in itemList) {
+                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by pattern
                     }
-                    //println("Regex query $regexQry")
                     query = myCollection
-                        .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
+                        .find(and(all("Ingredient", mList), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
                         .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                         .limit(25)
                 }
@@ -297,18 +296,14 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    // checking if user has entered a single word in ingredient
-                    // then just add space to the right end of string
-                    // other wise if more than 1 words entered by user
-                    // add regex OR between space of words
-                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                        searchQuery.replace(" ", " | ", true)
-                    } else {
-                        "$searchQuery "
+                    // creating a list of entered qry separated by space
+                    val itemList = searchQuery.split(" ")
+                    val mList = mutableListOf<Pattern>() // empty mutable list
+                    for( item in itemList) {
+                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by pattern
                     }
-                    //println("Regex query $regexQry")
                     query = myCollection
-                        .find(and(regex("Ingredient", regexQry, "i"), lte("Time", filterMaxCookTime)))
+                        .find(and(all("Ingredient", mList), lte("Time", filterMaxCookTime)))
                         .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                         .limit(25)
                 }
@@ -328,24 +323,21 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    // checking if user has entered a single word in ingredient
-                    // then just add space to the right end of string
-                    // other wise if more than 1 words entered by user
-                    // add regex OR between space of words
-                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                        searchQuery.replace(" ", " | ", true)
-                    } else {
-                        "$searchQuery "
+                    // creating a list of entered qry separated by space
+                    val itemList = searchQuery.split(" ")
+                    val mList = mutableListOf<Pattern>() // empty mutable list
+                    for( item in itemList) {
+                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by pattern
                     }
-                    //println("Regex query $regexQry")
+
                     query = myCollection
-                        .find(and(regex("Ingredient", regexQry, "i"), eq("Type", filterRecipeType)))
+                        .find(and(all("Ingredient", mList), eq("Type", filterRecipeType)))
                         .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                         .limit(25)
                 }
                 else -> {
                     query = myCollection
-                        .find(and(regex("Name", "^$searchQuery", "i"), eq("Type", filterRecipeType)))
+                        .find(and(regex("Name", searchQuery, "i"), eq("Type", filterRecipeType)))
                         .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                         .limit(20)
                 }
@@ -361,19 +353,15 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    // checking if user has entered a single word in ingredient
-                    // then just add space to the right end of string
-                    // other wise if more than 1 words entered by user
-                    // add regex OR between space of words
-                    val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                        searchQuery.replace(" ", " | ", true)
-                    } else {
-                        "$searchQuery "
+                    // creating a list of entered qry separated by space
+                    val itemList = searchQuery.split(" ")
+                    val mList = mutableListOf<Pattern>() // empty mutable list
+                    for( item in itemList) {
+                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by pattern
                     }
-                    //println("Regex query Start{$regexQry}End")
                     // general query without filters
                     query = myCollection
-                        .find(regex("Ingredient", regexQry, "i"))
+                        .find(all("Ingredient", mList))
                         .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                         .limit(25)
                 }

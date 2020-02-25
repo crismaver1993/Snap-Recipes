@@ -26,6 +26,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     private val TAG = "MainActivity"
 
+    // Flag to check if user's account is enabled or not
+    private var userStatus = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,9 +51,15 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 // add user id to shared preferences
                 //println("Success Login")
                 //getDataFromMongoDB(myCollection)
+
+                // marking flag to true
+                // means user's account is enabled and not blocked
+                userStatus = true
                 Log.i(TAG, "Login success for user id ${stitchAppClient.auth.user!!.id}")
             }.addOnFailureListener {
+                userStatus = false
                 Log.e(TAG, "Login failed")
+                Toast.makeText(this, it.localizedMessage.toString(), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -125,12 +134,28 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     fun startCameraFindRecipe(view: View) {
         val connectvityResult = checkInternetConnectivity()
-        if (connectvityResult) {
+        val userStatusResult = checkUserAccountStatus()
+        if (connectvityResult && userStatusResult) {
             //Toast.makeText(this, "Camera Mode", Toast.LENGTH_LONG).show()
             val intent = Intent(this, RecipeListByCameraActivity::class.java)
             startActivity(intent)
         }
 
+    }
+
+    private fun checkUserAccountStatus(): Boolean {
+        if (userStatus) {
+            return true
+        }
+        else {
+            Alerter.create(this)
+                .setTitle("Authentication failed!")
+                .setBackgroundColorRes(R.color.red)
+                .setDuration(3000)
+                .show()
+
+            return false
+        }
     }
 
     fun startSearchFindRecipe(view: View) {
