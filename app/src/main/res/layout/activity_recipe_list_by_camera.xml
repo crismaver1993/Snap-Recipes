@@ -120,7 +120,6 @@
         android:visibility="gone"
         app:lottie_autoPlay="true"
         app:lottie_fileName="cookingLottie.json"
-        app:lottie_enableMergePathsForKitKatAndAbove="true"
         app:lottie_loop="true" />
 
     <TextView
