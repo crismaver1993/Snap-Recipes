@@ -13,6 +13,8 @@ class SplashActivity : AppCompatActivity() {
     internal val mRunnable: Runnable = Runnable {
         if (!isFinishing) {
 
+            // opening tab activity
+            // which is onboarding/walkthrough
             val intent = Intent(applicationContext, TabActivity::class.java)
             startActivity(intent)
             finish()

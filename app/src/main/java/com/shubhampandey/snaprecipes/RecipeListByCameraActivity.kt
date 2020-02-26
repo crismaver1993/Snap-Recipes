@@ -40,6 +40,7 @@ import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 
@@ -465,20 +466,16 @@ class RecipeListByCameraActivity : AppCompatActivity() {
 
         // Using MongoDB query see Documentation
         if (filterMaxCookTime != null && filterRecipeType != null) { // both filters selected
-            // checking if user has entered a single word in ingredient
-            // then just add space to the right end of string
-            // other wise if more than 1 words entered by user
-            // add regex OR between space of words
-            val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                searchQuery.replace(" ", " | ", true)
-            } else {
-                "$searchQuery "
+            // separating search query separated by space
+            val itemList = searchQuery.split(" ")
+            val mList = mutableListOf<Pattern>() // empty mutable list
+            for( item in itemList) {
+                mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by appending with pattern
             }
-            //println("Regex query $regexQry")
             query = myCollection
                 .find(
                     and(
-                        regex("Ingredient", regexQry, "i"),
+                        all("Ingredient", mList),
                         lte("Time", filterMaxCookTime),
                         eq("Type", filterRecipeType)
                     )
@@ -487,58 +484,46 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 .limit(25)
 
         } else if (filterMaxCookTime != null && filterRecipeType == null) { // only time filter selected
-            // checking if user has entered a single word in ingredient
-            // then just add space to the right end of string
-            // other wise if more than 1 words entered by user
-            // add regex OR between space of words
-            val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                searchQuery.replace(" ", " | ", true)
-            } else {
-                "$searchQuery "
+            // separating search query separated by space
+            val itemList = searchQuery.split(" ")
+            val mList = mutableListOf<Pattern>() // empty mutable list
+            for( item in itemList) {
+                mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by appending with pattern
             }
-            //println("Regex query $regexQry")
             query = myCollection
                 .find(
                     and(
-                        regex("Ingredient", regexQry, "i"),
+                        all("Ingredient", mList),
                         lte("Time", filterMaxCookTime)
                     )
                 )
                 .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                 .limit(25)
         } else if (filterMaxCookTime == null && filterRecipeType != null) { // only dish type filter selected
-            // checking if user has entered a single word in ingredient
-            // then just add space to the right end of string
-            // other wise if more than 1 words entered by user
-            // add regex OR between space of words
-            val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                searchQuery.replace(" ", " | ", true)
-            } else {
-                "$searchQuery "
+            // separating search query separated by space
+            val itemList = searchQuery.split(" ")
+            val mList = mutableListOf<Pattern>() // empty mutable list
+            for( item in itemList) {
+                mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by appending with pattern
             }
-            //println("Regex query $regexQry")
             query = myCollection
                 .find(
                     and(
-                        regex("Ingredient", regexQry, "i"),
+                        all("Ingredient", mList),
                         eq("Type", filterRecipeType)
                     )
                 )
                 .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                 .limit(25)
         } else { // no filters selected
-            // checking if user has entered a single word in ingredient
-            // then just add space to the right end of string
-            // other wise if more than 1 words entered by user
-            // add regex OR between space of words
-            val regexQry: String = if (searchQuery.split(" ").size > 1) {
-                searchQuery.replace(" ", " | ", true)
-            } else {
-                "$searchQuery "
+            // separating search query separated by space
+            val itemList = searchQuery.split(" ")
+            val mList = mutableListOf<Pattern>() // empty mutable list
+            for( item in itemList) {
+                mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by appending with pattern
             }
-            //println("Regex query $regexQry")
             query = myCollection
-                .find(regex("Ingredient", regexQry, "i"))
+                .find(all("Ingredient", mList))
                 .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
                 .limit(25)
         }
@@ -672,11 +657,16 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                 null, createVegetableListData(),
                 SearchResultListener<SearchModel> { dialog, item, position ->
 
+                    // splitting the vegetable from Hindi display text
+                    // to get only english version of vegetables
+                    // Eg. Potato (Aloo) Will be added as only Potato
+                    val splittedItemList = item.title!!.split("(")
+                    val vegetable = splittedItemList[0].trim()
 
-                    detectedVegetables.add(0, item.title!!)
+                    detectedVegetables.add(0, vegetable)
 
                     // adding new selected vegetable to recognised item string
-                    searchQuery += " ${item.title}"
+                    searchQuery += " $vegetable"
 
                     // enabling Lottie animation
                     lottieCookingAnimation.visibility = View.VISIBLE
@@ -702,7 +692,7 @@ class RecipeListByCameraActivity : AppCompatActivity() {
                         Typeface.create("sans-serif-condensed-light", Typeface.NORMAL)
 
                     // adding text in button
-                    btn.text = item!!.title
+                    btn.text = vegetable
 
                     // adding button view to Layout
                     detectedItemLinearLayout.addView(
@@ -724,40 +714,22 @@ class RecipeListByCameraActivity : AppCompatActivity() {
     private fun createVegetableListData(): ArrayList<SearchModel>? {
         val vegetablesItem = ArrayList<SearchModel>()
         // Indian Vegetable in English
-        vegetablesItem.add(SearchModel("Potato"))
-        vegetablesItem.add(SearchModel("Tomato"))
-        vegetablesItem.add(SearchModel("Onion"))
-        vegetablesItem.add(SearchModel("Lady Finger"))
+        vegetablesItem.add(SearchModel("Potato (Aloo)"))
+        vegetablesItem.add(SearchModel("Tomato (Tamatar)"))
+        vegetablesItem.add(SearchModel("Onion (Pyaz)"))
+        vegetablesItem.add(SearchModel("Lady Finger (Bhindi)"))
         vegetablesItem.add(SearchModel("Broccoli"))
-        vegetablesItem.add(SearchModel("Cabbage"))
-        vegetablesItem.add(SearchModel("Cauliflower"))
-        vegetablesItem.add(SearchModel("Pumpkin"))
-        vegetablesItem.add(SearchModel("Beans"))
+        vegetablesItem.add(SearchModel("Cabbage (Gobhi)"))
+        vegetablesItem.add(SearchModel("Cauliflower (Phool Gobhi)"))
+        vegetablesItem.add(SearchModel("Pumpkin (Kaddu)"))
+        vegetablesItem.add(SearchModel("Beans (Sem)"))
         vegetablesItem.add(SearchModel("Chickpea"))
-        vegetablesItem.add(SearchModel("Pea"))
-        vegetablesItem.add(SearchModel("Carrot"))
-        vegetablesItem.add(SearchModel("Radish"))
-        vegetablesItem.add(SearchModel("Cucumber"))
-        vegetablesItem.add(SearchModel("Brinjal"))
+        vegetablesItem.add(SearchModel("Pea (Matar)"))
+        vegetablesItem.add(SearchModel("Carrot (Gajar)"))
+        vegetablesItem.add(SearchModel("Radish (Muli)"))
+        vegetablesItem.add(SearchModel("Cucumber (Kheera)"))
+        vegetablesItem.add(SearchModel("Brinjal (Baigan)"))
 
-        // Indian Vegetable in Hindi
-        vegetablesItem.add(SearchModel("Aloo"))
-        vegetablesItem.add(SearchModel("Aaloo"))
-        vegetablesItem.add(SearchModel("Tamatar"))
-        vegetablesItem.add(SearchModel("Pyaz"))
-        vegetablesItem.add(SearchModel("Bhindi"))
-        vegetablesItem.add(SearchModel("Gobi"))
-        vegetablesItem.add(SearchModel("Gobhi"))
-        vegetablesItem.add(SearchModel("Band Gobi"))
-        vegetablesItem.add(SearchModel("Band Gobhi"))
-        vegetablesItem.add(SearchModel("Muli"))
-        vegetablesItem.add(SearchModel("Kaddu"))
-        vegetablesItem.add(SearchModel("Sem"))
-        vegetablesItem.add(SearchModel("Matar"))
-        vegetablesItem.add(SearchModel("Mutter"))
-        vegetablesItem.add(SearchModel("Gajar"))
-        vegetablesItem.add(SearchModel("Kheera"))
-        vegetablesItem.add(SearchModel("Baigan"))
         return vegetablesItem
     }
 

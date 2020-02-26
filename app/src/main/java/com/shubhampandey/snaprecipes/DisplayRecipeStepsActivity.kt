@@ -7,24 +7,24 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
+import androidx.core.view.isVisible
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.mongodb.stitch.android.core.Stitch
 import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoClient
 import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoCollection
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateOptions
-import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateResult
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_display_recipe_steps.*
 import org.bson.Document
 import org.json.JSONArray
 import org.json.JSONException
 
-class DisplayRecipeStepsActivity : AppCompatActivity() {
+class DisplayRecipeStepsActivity : AppCompatActivity(), RatingBar.OnRatingBarChangeListener {
 
     var receivedRecipeImageURLInStepsActivity: String? = null
     var receivedRecipeTitle: String? = null
@@ -56,6 +56,10 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
         // getting reference of Collection and Documents
         myCollection = mongoClient.getDatabase("snap_recipes")
             .getCollection("recipes")
+
+        // setting up listener
+        // so that when rating change we can do operations
+        dishRatingBar.onRatingBarChangeListener = this
 
         // receiving transmitted data
         val intent = intent
@@ -133,83 +137,57 @@ class DisplayRecipeStepsActivity : AppCompatActivity() {
         return super.onSupportNavigateUp()
     }
 
-    fun iLikedRecipe(view: View) {
-        feedbackProgressBar.visibility = View.VISIBLE
-        updatePositiveVoteDataInMongoDB()
-    }
-
-    fun iDislikedRecipe(view: View) {
-        feedbackProgressBar.visibility = View.VISIBLE
-        updateNegativeVoteDataInMongoDB()
-    }
-
-    private fun updatePositiveVoteDataInMongoDB() {
-        // filter, for where we have to update value
-        val filterDoc = Document("Name", receivedRecipeTitle)
-        // increment count by 1
-        // $inc is keyword for incrementing
-        val updateDoc = Document("\$inc", Document("positiveVoteCount", 1))
-        // It will, Insert a single new document into the collection if update does not match
-        val options = RemoteUpdateOptions().upsert(true)
-
-        val updateTask = myCollection.updateOne(filterDoc, updateDoc, options)
-        updateTask.addOnCompleteListener { p0 ->
-            if ( p0.isSuccessful) {
-
-                updateUIForFeedback()
-
-                if ( p0.result?.upsertedId != null) {
-                    val upsertedId = p0.result!!.upsertedId.toString()
-                    Log.i(TAG, String.format("successfully upserted document with id: %s",
-                        upsertedId))
-                } else {
-                    val numMatched = p0.result!!.matchedCount
-                    val numModified = p0.result!!.modifiedCount
-                    Log.i(TAG, String.format("successfully matched %d and modified %d documents",
-                        numMatched, numModified))
-                }
-            } else {
-                feedbackProgressBar.visibility = View.GONE
-                Log.e(TAG, "failed to update document with: ", p0.exception)
-                Toast.makeText(this, p0.exception!!.localizedMessage, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun updateNegativeVoteDataInMongoDB() {
-        // filter, for where we have to update value
-        val filterDoc = Document("Name", receivedRecipeTitle)
-        // increment count by 1
-        // $inc is keyword for incrementing
-        val updateDoc = Document("\$inc", Document("negativeVoteCount", 1))
-        // It will, Insert a single new document into the collection if update does not match
-        val options = RemoteUpdateOptions().upsert(true)
-
-        val updateTask = myCollection.updateOne(filterDoc, updateDoc, options)
-        updateTask.addOnCompleteListener { p0 ->
-            if ( p0.isSuccessful) {
-                updateUIForFeedback()
-                if ( p0.result?.upsertedId != null) {
-                    val upsertedId = p0.result!!.upsertedId.toString()
-                    Log.i(TAG, String.format("successfully upserted document with id: %s",
-                        upsertedId))
-                } else {
-                    val numMatched = p0.result!!.matchedCount
-                    val numModified = p0.result!!.modifiedCount
-                    Log.i(TAG, String.format("successfully matched %d and modified %d documents",
-                        numMatched, numModified))
-                }
-            } else {
-                feedbackProgressBar.visibility = View.GONE
-                Log.e(TAG, "failed to update document with: ", p0.exception)
-                Toast.makeText(this, p0.exception!!.localizedMessage, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun updateUIForFeedback() {
-        feedbackLL.visibility = View.GONE
+        dishRatingBar.visibility = View.GONE
+        ratingSubmitButton.visibility = View.GONE
         feedbackDoneTextView.visibility = View.VISIBLE
         feedbackProgressBar.visibility = View.GONE
+    }
+
+    // Implemented OnRatingChanged Inerface to override the method
+    override fun onRatingChanged(ratingBar: RatingBar?, rating: Float, fromUser: Boolean) {
+        Log.i(TAG, "New rating $rating")
+    }
+
+    fun submitRating(view: View) {
+        if (dishRatingBar.rating != 0f) {
+            feedbackProgressBar.visibility = View.VISIBLE
+            updateRatingDataInMongoDB(dishRatingBar.rating.toInt())
+        }
+        else {
+            Snackbar.make(view, "Rating must be between 1-5", Snackbar.LENGTH_LONG).show()
+        }
+    }
+
+    private fun updateRatingDataInMongoDB(rating: Int) {
+        // filter, for where we have to update value
+        val filterDoc = Document("Name", receivedRecipeTitle)
+        // making list of BSON Documents to update many fields
+        // Document(Field, Value to Increment By)
+        // $inc is keyword for incrementing
+        val updateDoc = Document("\$inc", Document("numberOfRatings", 1).append("totalStarRating", rating))
+        // It will, Insert a single new document into the collection if update does not match
+        val options = RemoteUpdateOptions().upsert(true)
+
+        val updateTask = myCollection.updateMany(filterDoc, updateDoc, options)
+        updateTask.addOnCompleteListener { p0 ->
+            if ( p0.isSuccessful) {
+                updateUIForFeedback()
+                if ( p0.result?.upsertedId != null) {
+                    val upsertedId = p0.result!!.upsertedId.toString()
+                    Log.i(TAG, String.format("successfully upserted document with id: %s",
+                        upsertedId))
+                } else {
+                    val numMatched = p0.result!!.matchedCount
+                    val numModified = p0.result!!.modifiedCount
+                    Log.i(TAG, String.format("successfully matched %d and modified %d documents",
+                        numMatched, numModified))
+                }
+            } else {
+                feedbackProgressBar.visibility = View.GONE
+                Log.e(TAG, "failed to update document with: ", p0.exception)
+                Toast.makeText(this, p0.exception!!.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

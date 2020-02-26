@@ -34,7 +34,7 @@ class TabActivity : AppCompatActivity() {
         //when this activity is about to launch we need to check its opened true or false
         if (restorePrefData())
         {
-            val mainActivity = Intent(applicationContext, MainActivity::class.java)
+            val mainActivity = Intent(applicationContext, UserPreferencesActivity::class.java)
             startActivity(mainActivity)
             finish()
         }
@@ -90,7 +90,7 @@ class TabActivity : AppCompatActivity() {
             //it already checked the TabActivity use shared preference to know true or false
             savePrefData()
             //If yes open MainActivity
-            val main = Intent(applicationContext, MainActivity::class.java)
+            val main = Intent(applicationContext, UserPreferencesActivity::class.java)
             startActivity(main)
             finish()
         }

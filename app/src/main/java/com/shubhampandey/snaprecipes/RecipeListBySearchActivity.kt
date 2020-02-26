@@ -76,7 +76,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
             if (checkedId == R.id.searchByDishChip)
                 searchFieldeditText.hint = "Try dish name (eg. Matar Paneer)"
             else
-                searchFieldeditText.hint = "Try ingredients separated by space"
+                searchFieldeditText.hint = "Try searching Potato Tomato Onion..."
 
         }
 
@@ -264,7 +264,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                 (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
                     query = myCollection
                         .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
@@ -276,13 +276,13 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                     }
                     query = myCollection
                         .find(and(all("Ingredient", mList), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(25)
                 }
                 else -> { // if non of the chip selected
                     query = myCollection
                         .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
             }
@@ -292,7 +292,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                 (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
                     query = myCollection
                         .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
@@ -304,13 +304,13 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                     }
                     query = myCollection
                         .find(and(all("Ingredient", mList), lte("Time", filterMaxCookTime)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(25)
                 }
                 else -> {
                     query = myCollection
                         .find(and(regex("Name", "^$searchQuery", "i"), lte("Time", filterMaxCookTime)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
             }
@@ -319,7 +319,7 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                 (chip!!.id == R.id.searchByDishChip) -> { // Using chip id to find if user want to search by dish name or ingredients
                     query = myCollection
                         .find(and(regex("Name", "^$searchQuery", "i"), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
@@ -332,13 +332,13 @@ class RecipeListBySearchActivity : AppCompatActivity() {
 
                     query = myCollection
                         .find(and(all("Ingredient", mList), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(25)
                 }
                 else -> {
                     query = myCollection
                         .find(and(regex("Name", searchQuery, "i"), eq("Type", filterRecipeType)))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
             }
@@ -349,26 +349,26 @@ class RecipeListBySearchActivity : AppCompatActivity() {
                     // general query without filters
                     query = myCollection
                         .find(regex("Name", "^$searchQuery", "i"))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
                 (chip!!.id == R.id.searchByIngredientChip) -> { // Using chip id to find if user want to search by dish name or ingredients
-                    // creating a list of entered qry separated by space
+                    // separating search query separated by space
                     val itemList = searchQuery.split(" ")
                     val mList = mutableListOf<Pattern>() // empty mutable list
                     for( item in itemList) {
-                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by pattern
+                        mList.add(Pattern.compile(" $item", Pattern.CASE_INSENSITIVE)) // adding item in mutablelist by appending with pattern
                     }
                     // general query without filters
                     query = myCollection
                         .find(all("Ingredient", mList))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(25)
                 }
                 else -> {
                     query = myCollection
                         .find(regex("Name", "^$searchQuery", "i"))
-                        .sort(Document("positiveVoteCount", -1)) // sort by positiveVoteCount in descending order
+                        .sort(Document("totalStarRating", -1)) // sort by totalStarRating in descending order
                         .limit(20)
                 }
             }

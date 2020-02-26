@@ -15,20 +15,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".UserPreferencesActivity"></activity>
         <activity
             android:name=".FavoriteListActivity"
             android:label="My Favorites"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity android:name=".DeveloperInfoActivity" />
-        <activity android:name=".TabActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity
+            android:name=".TabActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".MainActivity" />
         <activity
             android:name=".DisplayRecipeStepsActivity"
             android:label="Recipe Instruction"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-        <activity android:name=".FilterDishActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity
+            android:name=".FilterDishActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".RecipeListBySearchActivity" />
         <activity android:name=".DisplayRecipeSourceActivity" />
         <activity
