@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             }.addOnFailureListener {
                 userStatus = false
                 Log.e(TAG, "Login failed")
-                Toast.makeText(this, it.localizedMessage.toString(), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Authentication failed", Toast.LENGTH_SHORT).show()
             }
     }
 
