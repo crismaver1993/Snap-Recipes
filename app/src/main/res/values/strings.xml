@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Snap Recipes</string>
 
-    <string name="clarifai_api_key">1a05011ca198482394d23eb730d96694</string>
+    <string name="clarifai_api_key">Your Clarifai API Key Here</string>
     <string name="max_cooking_time">Max. Cooking Time</string>
 
 
@@ -56,6 +56,6 @@
     <string name="share_recipe">Share Recipe</string>
 
     <!-- Stitch App ID-->
-    <string name="stitch_app_id">snaprecipesstitch-gzgad</string>
+    <string name="stitch_app_id">Stitch App ID Here</string>
 
 </resources>
